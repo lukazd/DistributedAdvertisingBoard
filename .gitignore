@@ -102,3 +102,12 @@ ENV/
 
 # mac
 .DS_STORE
+
+# Apikeys
+*apiKey
+
+# Idea
+*.Idea
+
+# VScode
+*.vscode/
