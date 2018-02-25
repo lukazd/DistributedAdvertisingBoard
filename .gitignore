@@ -110,4 +110,4 @@ ENV/
 *.Idea
 
 # VScode
-*.vscode/
+*.vscode/settings.json
