@@ -1,3 +1,4 @@
+import numpy as np
 import cv2
 
 cap = cv2.VideoCapture(0)
@@ -13,6 +14,8 @@ frame_height = int(cap.get(4))
 
 # Define the codec and create VideoWriter object.The output is stored in 'outpy.avi' file.
 # out = cv2.VideoWriter('outpy.png', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
+# Alternative method for singular frame, where img is the frame
+# cv2.imwrite('newImage.png', img)
 
 ii = 1
 # max = 10
