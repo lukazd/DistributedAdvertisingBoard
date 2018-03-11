@@ -1,7 +1,25 @@
 import numpy as np
 import cv2
+import cognitive_face as CF
+import requests
+from io import BytesIO
+from PIL import Image, ImageDraw
 
+# Specify the camera to use, 0 = built-in
 cap = cv2.VideoCapture(0)
+
+# Replace with a valid subscription key (keeping the quotes in place).
+# apikey = open("apikeys.txt", "r").read()
+
+# KEY = 'bead87ccbe074693a5a793d101c8086d'
+KEY = 'b7ae1171b8ad4b68b3839034902418ec'
+CF.Key.set(KEY)
+
+BASE_URL = 'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/'  # Replace with your regional Base URL
+CF.BaseUrl.set(BASE_URL)
+
+# If you need to, you can change your base API url with:
+#CF.BaseUrl.set('https://westcentralus.api.cognitive.microsoft.com/face/v1.0/')
 
 # Check if camera opened successfully
 if (cap.isOpened() == False):
@@ -9,42 +27,61 @@ if (cap.isOpened() == False):
 
 # Default resolutions of the frame are obtained.The default resolutions are system dependent.
 # We convert the resolutions from float to integer.
-frame_width = int(cap.get(3))
-frame_height = int(cap.get(4))
+# frame_width = int(cap.get(3))
+# frame_height = int(cap.get(4))
 
-# Define the codec and create VideoWriter object.The output is stored in 'outpy.avi' file.
-# out = cv2.VideoWriter('outpy.png', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
-# Alternative method for singular frame, where img is the frame
-# cv2.imwrite('newImage.png', img)
+ii = 0
+max = 2
+wait = 3000
 
-ii = 1
-# max = 10
-wait = 1
+while(ii < max ):
+    # Code for waiting after frame (integer value to mili-seconds)
+    cv2.waitKey(wait)
 
-while(True):
     # Capture frame-by-frame
     ret, frame = cap.read()
 
     if ret == True:
-        # Write the frame into the file 'output.avi'
-  #      out.write(frame)
-
         # Our operations on the frame come here
         color_obj = cv2.cvtColor(frame, cv2.COLORMAP_BONE)
+        # Write the frame into the file newImage.jpg
+        cv2.imwrite('newImage.jpg', color_obj)
 
-        # Display the resulting frame
-        cv2.imshow('frame',color_obj)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-        # Code for waiting after frame (integer value to mili-seconds)
-        cv2.waitKey(wait)
+        faces = CF.face.detect('newImage.jpg')
+        print(faces)
+
+
+        # Convert width height to a point in a rectangle
+        def getRectangle(faceDictionary):
+            rect = faceDictionary['faceRectangle']
+            left = rect['left']
+            top = rect['top']
+            bottom = left + rect['height']
+            right = top + rect['width']
+            return ((left, top), (bottom, right))
+
+
+        # Download the image from the url
+        # response = cv2.imread('newImage.jpg')
+        # img = Image.open(BytesIO(cv2.imread('newImage.jpg')))
+        img = Image.open('newImage.jpg')
+
+        # For each face returned use the face rectangle and draw a red box.
+        draw = ImageDraw.Draw(img)
+        for face in faces:
+            draw.rectangle(getRectangle(face), outline='red')
+
+        # Display the image in the users default image browser.
+        img.show()
+
+        ii = ii + 1
     # Break the loop
     else:
         break
 
+
 # When everything done, release the capture
 cap.release()
-# out.release()
 cv2.destroyAllWindows()
 
 # Source for code:

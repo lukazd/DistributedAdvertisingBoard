@@ -1,0 +1,109 @@
+#:kivy 1.10.0
+
+
+<ScreenOne>:
+
+    BoxLayout:
+        orientation: "vertical"
+        size: root.size
+        spacing: 20
+        padding: 20
+
+        Label:
+            id: label_1_sc1
+            background_normal: ''
+            background_color: 0, 0, 0, 1
+            text: "Rec"
+            font_size: 20
+            font_weight: "Bold"
+            color: 1, 0, 0, 1
+            pos_hint: {'left': 0.2 + self.size_hint[1]/2}
+            size_hint: 0.3, .3
+
+        Label:
+            id: label_2_sc1
+            background_normal: ''
+            background_color: 0, 0, 0, 1
+            text: "Distributed Advertising Board"
+            color: 1, 1, 1, 1
+            font_size: 50
+            font_weight: "Bold"
+            center: self.parent.center
+
+
+<ScreenTwo>:
+
+    GridLayout:
+        orientation: 'vertical'
+        size: root.size
+        Label:
+            id: label_1_sc2
+            background_normal: ''
+            background_color: 0, 0, 1, 1
+            text: "Hello, _____ _____."
+            color: 1, 0, 0, 1
+            font_size: 50
+            font_weight: "Bold"
+
+        Label:
+            id: label_2_sc2
+
+            text: ""
+        Button:
+            id: button_1_sc2
+            background_normal: ''
+            background_color: 0, 0, 1, 1
+            text: "View Ads?"
+            color: 0, 0, 0, 1
+            font_size: 30
+            font_weight: "Bold"
+            on_release:
+                root.manager.current = "screen3"
+
+<ScreenThree>:
+
+    BoxLayout:
+        orientation: "horizontal"
+        size: root.size
+        Button:
+            id: button_1_sc3
+            background_normal: ''
+            background_color: 0, 0, 0, 1
+            text: "<"
+            color: 0.5, 0.5, 0.5, 1
+            font_size: 50
+            font_weight: "Bold"
+
+        Label:
+            text: ""
+
+        Button:
+            id: button_2_sc3
+            background_normal: ''
+            background_color: 0, 0, 0, 1
+            text: ">"
+            color: 0.5, 0.5, 0.5, 1
+            font_size: 50
+            font_weight: "Bold"
+
+<Manager>:
+    id: screen_manager
+
+    screen_one: screen_one
+    screen_two: screen_two
+    screen_three: screen_three
+
+    ScreenOne:
+        id: screen_one
+        name: "screen1"
+        manager: screen_manager
+
+    ScreenTwo:
+        id: screen_two
+        name: "screen2"
+        manager: screen_manager
+
+    ScreenThree:
+        id: screen_three
+        name: "screen3"
+        manager: screen_manager
