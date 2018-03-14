@@ -2,8 +2,8 @@
 
 
 <ScreenOne>:
-
     BoxLayout:
+        rows: 2
         orientation: "vertical"
         size: root.size
         spacing: 20
@@ -13,7 +13,7 @@
             id: label_1_sc1
             background_normal: ''
             background_color: 0, 0, 0, 1
-            text: "Rec"
+            text: "Finding a User..."
             font_size: 20
             font_weight: "Bold"
             color: 1, 0, 0, 1
@@ -32,39 +32,55 @@
 
 
 <ScreenTwo>:
-
     GridLayout:
-        orientation: 'vertical'
+        orientation: 'horizontal'
         size: root.size
-        Label:
-            id: label_1_sc2
-            background_normal: ''
-            background_color: 0, 0, 1, 1
-            text: "Hello, _____ _____."
-            color: 1, 0, 0, 1
-            font_size: 50
-            font_weight: "Bold"
+        rows: 2
+        cols: 1
 
-        Label:
-            id: label_2_sc2
+        BoxLayout:
+            Label:
+                id: label_1_sc2
+                background_normal: ''
+                background_color: 0, 0, 1, 1
+                text: ""
+                color: 0, 1, 0, 1
+                font_size: 50
+                font_weight: "Bold"
+                center: self.parent.center
 
-            text: ""
-        Button:
-            id: button_1_sc2
-            background_normal: ''
-            background_color: 0, 0, 1, 1
-            text: "View Ads?"
-            color: 0, 0, 0, 1
-            font_size: 30
-            font_weight: "Bold"
-            on_release:
-                root.manager.current = "screen3"
+        BoxLayout:
+            cols: 2
+            AsyncImage:
+                id: img_src
+                source: 'newImage.png'
+                pos: self.pos
+                size: self.size
+                allow_stretch: True
+                keep_ratio: False
+                background_normal: ''
+                background_color: 1, 1, 1, 1
+
+            Button:
+                id: button_1_sc2
+                background_normal: ''
+                background_color: 0, 1, 0, 1
+                text: "View Ads?"
+                color: 0, 0, 0, 1
+                font_size: 30
+                font_weight: "Bold"
+                on_release:
+                    root.manager.current = "screen3"
 
 <ScreenThree>:
-
     BoxLayout:
+        spacing: 10
+        padding: 10,10,10,0
+        rows: 1
+        cols: 3
         orientation: "horizontal"
         size: root.size
+
         Button:
             id: button_1_sc3
             background_normal: ''
@@ -73,9 +89,14 @@
             color: 0.5, 0.5, 0.5, 1
             font_size: 50
             font_weight: "Bold"
+            size_hint_x: .10
 
         Label:
-            text: ""
+            pos: self.pos
+            size: self.size
+            allow_stretch: True
+            keep_ratio: False
+            source: 'meandjarred.png'
 
         Button:
             id: button_2_sc3
@@ -85,6 +106,7 @@
             color: 0.5, 0.5, 0.5, 1
             font_size: 50
             font_weight: "Bold"
+            size_hint_x: .10
 
 <Manager>:
     id: screen_manager
