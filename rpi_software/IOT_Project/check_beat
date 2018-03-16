@@ -1,0 +1,18 @@
+# beat frequencies
+import numpy as np
+import matplotlib.pyplot as plt
+from math import pi
+
+f = [0,6.25,18.3];
+Ns = 20*1024
+t = np.linspace(0,20,Ns);
+a = np.zeros((Ns),'double')
+for fi in f:
+    a = a + np.cos(2*pi*fi*t)
+
+plt.figure(figsize=(10,5))
+plt.plot(t, a)
+plt.title('three frequencies beating')
+plt.xlabel('time (s)')
+plt.ylabel('amplitude')
+plt.show()

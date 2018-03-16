@@ -111,3 +111,7 @@ ENV/
 
 # VScode
 *.vscode/settings.json
+
+#Android
+MobileApp/app/src/main/res/values/apikeys.xml
+*.json
