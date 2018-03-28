@@ -1,17 +1,20 @@
 import os
 import re
+import node_ip
 
 from iota import Iota, ProposedTransaction, ProposedBundle, Address, Tag, TryteString
 from iota.adapter import HttpAdapter
+from iota.adapter.sandbox import SandboxAdapter
 from iota.adapter.wrappers import RoutingWrapper
+from urlparse import urlparse
 
-IOTA_LOCAL_NODE = "http://localhost:14265"
-IOTA_REMOTE_NODE = "https://nodes.thetangle.org:443"
+IOTA_REMOTE_NODE = "https://field.carriota.com:443"
 SEED = os.environ['IOTA_SEED']
 
 api = Iota(
-    RoutingWrapper(IOTA_REMOTE_NODE).add_route('attachToTangle', IOTA_LOCAL_NODE),
-    seed = SEED)
+    IOTA_REMOTE_NODE,
+    seed = SEED
+)
 
 def get_balance(address):
     return api.get_balances(addresses)['balances'][0]
@@ -32,3 +35,5 @@ def is_address_spent(address):
 
 def is_address_valid(address):
     return re.search("[9A-Z]{81}", address) is not None
+
+create_and_send_transactions('VEYONVNFFAQPKYMMOJZJ9JLQNBVGQMMLSDNTWZQYCYYNNJIBOKJHHGCIKKNEVEAXQO9MJXEQLFPQCIEAW', 164, 'The number of the beast')
