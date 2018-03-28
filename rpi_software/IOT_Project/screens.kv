@@ -29,7 +29,6 @@
                 font_weight: 'Bold'
                 font_size: 20
                 size_hint_x: 0.2
-                on_release: dropdown.open(self)
 
             Label:
                 id: dab_label
@@ -49,52 +48,6 @@
                 font_size: 20
                 color: 0.54, 0.824, 1, 1
                 size_hint_x: 0.2
-
-            DropDown:
-                id: dropdown
-                on_parent: self.dismiss()
-                on_select: btn.text = '{}'.format(args[1])
-
-                Button:
-                    text: 'Automation'
-                    font_weight: "Bold"
-                    font_size: 20
-                    size_hint_y: None
-                    height: '48dp'
-                    background_normal: ''
-                    background_color: 0.54,0.824,1, 1
-                    on_release: dropdown.select('Automation')
-
-                Button:
-                    text: 'Clothing'
-                    font_weight: "Bold"
-                    font_size: 20
-                    size_hint_y: None
-                    height: '48dp'
-                    background_normal: ''
-                    background_color: 0.54,0.824,1, 1
-                    on_release: dropdown.select('Clothing')
-
-                Button:
-                    text: 'Daniel''s Fetish'
-                    font_weight: "Bold"
-                    font_size: 20
-                    size_hint_y: None
-                    height: '48dp'
-                    background_normal: ''
-                    background_color: 0.54,0.824,1, 1
-                    on_release: dropdown.select('Daniel''s Fetish')
-
-                Button:
-                    text: 'Food'
-                    font_weight: "Bold"
-                    font_size: 20
-                    size_hint_y: None
-                    height: '48dp'
-                    background_normal: ''
-                    background_color: 0.54,0.824,1, 1
-                    on_release: dropdown.select('Food')
-
 
         BoxLayout:
             size_hint: 1,0.8
@@ -164,6 +117,46 @@
                 color: 0, 0, 0, 1
                 size_hint_x: 0.2
 
+<CustomDropDown>:
+    Button:
+        text: 'Automation'
+        font_weight: "Bold"
+        font_size: 20
+        size_hint_y: None
+        height: '48dp'
+        background_normal: ''
+        background_color: 0.54,0.824,1, 1
+        on_press: root.select('Automation')
+
+    Button:
+        text: 'Clothing'
+        font_weight: "Bold"
+        font_size: 20
+        size_hint_y: None
+        height: '48dp'
+        background_normal: ''
+        background_color: 0.54,0.824,1,1
+        on_press: root.select('Clothing')
+
+    Button:
+        text: 'Food'
+        font_weight: "Bold"
+        font_size: 20
+        size_hint_y: None
+        height: '48dp'
+        background_normal: ''
+        background_color: 0.54,0.824,1,1
+        on_release: root.select('Food')
+
+    Button:
+        text: 'Video Games'
+        font_weight: "Bold"
+        font_size: 20
+        size_hint_y: None
+        height: '48dp'
+        background_normal: ''
+        background_color: 0.54,0.824,1,1
+        on_press: root.select('Video Games')
 
 <Manager>:
     id: screen_manager
