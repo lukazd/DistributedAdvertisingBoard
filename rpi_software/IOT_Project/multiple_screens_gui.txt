@@ -1,0 +1,166 @@
+<ScreenOne>:
+    BoxLayout:
+        rows: 2
+        orientation: "vertical"
+        size: root.size
+        spacing: 20
+        padding: 20
+
+        Label:
+            id: label_1_sc1
+            background_normal: ''
+            background_color: 0, 0, 0, 1
+            text: "Finding a User..."
+            text_size = self.size
+            font_weight: "Bold"
+            color: 1, 0, 0, 1
+            pos_hint: {'left': 0.2 + self.size_hint[1]/2}
+            size_hint: 0.3, .3
+
+        Label:
+            id: label_2_sc1
+            background_normal: ''
+            background_color: 0, 0, 0, 1
+            text: "Distributed Advertising Board"
+            color: 1, 1, 1, 1
+            font_size: 50
+            font_weight: "Bold"
+            center: self.parent.center
+
+
+<ScreenTwo>:
+    GridLayout:
+        orientation: 'horizontal'
+        size: root.size
+        rows: 2
+        cols: 1
+
+        BoxLayout:
+            size_hint: 1,0.2
+            Label:
+                id: label_1_sc2
+                background_normal: ''
+                background_color: 0, 0, 1, 1
+                text: ""
+                color: 0, 1, 0, 1
+                font_size: 50
+                font_weight: "Bold"
+                center: self.parent.center
+                size: self.texture_size
+
+        BoxLayout:
+            cols: 2
+            AsyncImage:
+                id: img_src
+                source: 'newImage.png'
+                pos: self.pos
+                size: self.size
+                allow_stretch: True
+                keep_ratio: False
+                background_normal: ''
+                background_color: 1, 1, 1, 1
+
+            Button:
+                id: button_1_sc2
+                background_normal: ''
+                background_color: 0, 1, 0, 1
+                text: "View Ads?"
+                color: 0, 0, 0, 1
+                font_size: 30
+                font_weight: "Bold"
+                size_hint_x: 0.3
+                on_release:
+                    root.manager.current = "screen3"
+
+<ScreenThree>:
+    GridLayout:
+        orientation: 'horizontal'
+        size: root.size
+        rows: 2
+        cols: 1
+
+        BoxLayout:
+            size_hint: 1, 0.3
+
+            Label:
+                id: label_1_sc3
+                text:
+
+            Label:
+                id: label_2_sc3
+
+            Label:
+                id: label_3_sc3
+
+        BoxLayout:
+            size_hint: 1, 0.7
+
+            Button:
+                id: button_1_sc3
+                background_normal: ''
+                background_color: 0, 0, 0, 1
+                text: "<"
+                color: 0.5, 0.5, 0.5, 1
+                font_size: 50
+                font_weight: "Bold"
+                size_hint_x: .10
+
+            Label:
+                pos: self.pos
+                size: self.size
+                allow_stretch: True
+                keep_ratio: False
+                source: 'meandjarred.png'
+
+            Button:
+                id: button_2_sc3
+                background_normal: ''
+                background_color: 0, 0, 0, 1
+                text: ">"
+                color: 0.5, 0.5, 0.5, 1
+                font_size: 50
+                font_weight: "Bold"
+                size_hint_x: .10
+
+<ScreenFour>:
+    GridLayout:
+        orientation: 'horizontal'
+        size: root.size
+        rows: 2
+        cols: 1
+
+        BoxLayout:
+
+
+        GridLayout:
+
+
+
+<Manager>:
+    id: screen_manager
+
+    screen_one: screen_one
+    screen_two: screen_two
+    screen_three: screen_three
+    screen_four: screen_four
+
+    ScreenOne:
+        id: screen_one
+        name: "screen1"
+        manager: screen_manager
+
+    ScreenTwo:
+        id: screen_two
+        name: "screen2"
+        manager: screen_manager
+
+    ScreenThree:
+        id: screen_three
+        name: "screen3"
+        manager: screen_manager
+
+    ScreenFour:
+        id: screen_four
+        name: "screen4"
+        manager: screen_manager
+
