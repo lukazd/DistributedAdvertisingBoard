@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw
 cap = cv2.VideoCapture(0)
 
 # Replace with a valid subscription key (keeping the quotes in place).
-KEY = '5af6e0825d3b41119e86f1c9634bb3d5'
+
 CF.Key.set(KEY)
 
 BASE_URL = 'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/'  # Replace with your regional Base URL

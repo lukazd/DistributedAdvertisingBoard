@@ -115,3 +115,4 @@ ENV/
 #Android
 MobileApp/app/src/main/res/values/apikeys.xml
 *.json
+rpi_software/IOT_Project/keys.txt
