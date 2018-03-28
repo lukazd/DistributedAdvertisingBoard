@@ -36,7 +36,7 @@
                 font_size: 40
                 font_weight: 'Bold'
                 background_normal: ''
-                background_color: 0.54, 0.824, 1, 1
+                background_color: 0, 0, 0, 1
                 size_hint_x: 0.4
 
             Label:
@@ -70,6 +70,9 @@
                 allow_stretch: True
                 keep_ratio: False
                 size_hint_x: 0.8
+                background_normal: ''
+                background_color: 0, 0, 0, 1
+                color: 0, 0, 0, 1
 
             Button:
                 id: right_button
@@ -125,8 +128,8 @@
         size_hint_y: None
         height: '48dp'
         background_normal: ''
-        background_color: 0.54,0.824,1, 1
-        on_press: root.select('Automation')
+        background_color: 0,0,0,1
+        on_press: root.select('Category: Automation')
 
     Button:
         text: 'Clothing'
@@ -135,8 +138,8 @@
         size_hint_y: None
         height: '48dp'
         background_normal: ''
-        background_color: 0.54,0.824,1,1
-        on_press: root.select('Clothing')
+        background_color: 0,0,0,1
+        on_press: root.select('Category: Clothing')
 
     Button:
         text: 'Food'
@@ -145,8 +148,8 @@
         size_hint_y: None
         height: '48dp'
         background_normal: ''
-        background_color: 0.54,0.824,1,1
-        on_release: root.select('Food')
+        background_color: 0,0,0,1
+        on_release: root.select('Category: Food')
 
     Button:
         text: 'Video Games'
@@ -155,8 +158,18 @@
         size_hint_y: None
         height: '48dp'
         background_normal: ''
-        background_color: 0.54,0.824,1,1
-        on_press: root.select('Video Games')
+        background_color: 0,0,0,1
+        on_press: root.select('Category: Video Games')
+
+    Button:
+        text: 'Personalized Ads'
+        font_weight: "Bold"
+        font_size: 20
+        size_hint_y: None
+        height: '48dp'
+        background_normal: ''
+        background_color: 0,0,0,1
+        on_press: root.select('Category: Personalized Ads')
 
 <Manager>:
     id: screen_manager
