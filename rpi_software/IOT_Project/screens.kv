@@ -1,131 +1,182 @@
 #:kivy 1.10.0
+#:import Factory kivy.factory.Factory
+
+<MyPopup@Popup>:
+    auto_dismiss: False
+    title: 'Help-Me'
+    Button:
+        text: 'Stuff will be written to describe program \n Press to close me!'
+        background_normal: ''
+        background_color: 0, 0, 0, 1
+        on_release: root.dismiss()
 
 
 <ScreenOne>:
-    BoxLayout:
-        rows: 2
-        orientation: "vertical"
-        size: root.size
-        spacing: 20
-        padding: 20
-
-        Label:
-            id: label_1_sc1
-            background_normal: ''
-            background_color: 0, 0, 0, 1
-            text: "Finding a User..."
-            font_size: 20
-            font_weight: "Bold"
-            color: 1, 0, 0, 1
-            pos_hint: {'left': 0.2 + self.size_hint[1]/2}
-            size_hint: 0.3, .3
-
-        Label:
-            id: label_2_sc1
-            background_normal: ''
-            background_color: 0, 0, 0, 1
-            text: "Distributed Advertising Board"
-            color: 1, 1, 1, 1
-            font_size: 50
-            font_weight: "Bold"
-            center: self.parent.center
-
-
-<ScreenTwo>:
     GridLayout:
-        orientation: 'horizontal'
+        orientation: 'vertical'
         size: root.size
-        rows: 2
-        cols: 1
+        rows: 3
 
         BoxLayout:
-            Label:
-                id: label_1_sc2
-                background_normal: ''
-                background_color: 0, 0, 1, 1
-                text: ""
-                color: 0, 1, 0, 1
-                font_size: 50
-                font_weight: "Bold"
-                center: self.parent.center
-
-        BoxLayout:
-            cols: 2
-            AsyncImage:
-                id: img_src
-                source: 'newImage.png'
-                pos: self.pos
-                size: self.size
-                allow_stretch: True
-                keep_ratio: False
-                background_normal: ''
-                background_color: 1, 1, 1, 1
+            size_hint: 1,0.1
+            cols: 3
 
             Button:
-                id: button_1_sc2
+                id: categ_button
                 background_normal: ''
-                background_color: 0, 1, 0, 1
-                text: "View Ads?"
+                background_color: 0, 0, 0, 1
+                text: ""
+                font_weight: 'Bold'
+                font_size: 20
+                size_hint_x: 0.2
+
+            Label:
+                id: dab_label
+                text: 'Distributed Advertising Board'
+                font_size: 40
+                font_weight: 'Bold'
+                background_normal: ''
+                background_color: 0, 0, 0, 1
+                size_hint_x: 0.4
+
+            Label:
+                id: timer_label
+                background_normal: ''
+                background_color: 0, 0, 0, 1
+                text: ""
+                font_weight: 'Bold'
+                font_size: 20
+                color: 0.54, 0.824, 1, 1
+                size_hint_x: 0.2
+
+        BoxLayout:
+            size_hint: 1,0.8
+            cols: 3
+
+            Button:
+                id: left_button
+                background_normal: ''
+                background_color: 0, 0, 0, 1
+                text: ""
+                font_weight: 'Bold'
+                font_size: 50
+                size_hint_x: 0.1
+
+            AsyncImage:
+                id: center_image
+                pos: self.pos
+                center: self.parent.center
+                size: self.texture_size
+                allow_stretch: True
+                keep_ratio: False
+                size_hint_x: 0.8
+                background_normal: ''
+                background_color: 0, 0, 0, 1
                 color: 0, 0, 0, 1
-                font_size: 30
+
+            Button:
+                id: right_button
+                background_normal: ''
+                background_color: 0, 0, 0, 1
+                text: ""
+                font_weight: 'Bold'
+                font_size: 50
+                size_hint_x: 0.1
+
+        BoxLayout:
+            size_hint: 1,0.1
+            cols: 3
+
+            Label:
+                id: user_label
+                size_hint_x: 0.6
+                background_normal: ''
+                background_color: 0, 0, 0, 1
+                text: "Finding user..."
                 font_weight: "Bold"
-                on_release:
-                    root.manager.current = "screen3"
+                font_size: 40
+                text_size: self.size
+                valign: "middle"
+                padding_x: 10
+                color: 1, 0, 0, 1
 
-<ScreenThree>:
-    BoxLayout:
-        spacing: 10
-        padding: 10,10,10,0
-        rows: 1
-        cols: 3
-        orientation: "horizontal"
-        size: root.size
+            Button:
+                id: help_button
+                text: 'Help-Me'
+                font_weight: "Bold"
+                font_size: 40
+                size_hint_x: 0.2
+                background_normal: ''
+                background_color: 0.8, 0, 0, 1
+                on_release: Factory.MyPopup().open()
 
-        Button:
-            id: button_1_sc3
-            background_normal: ''
-            background_color: 0, 0, 0, 1
-            text: "<"
-            color: 0.5, 0.5, 0.5, 1
-            font_size: 50
-            font_weight: "Bold"
-            size_hint_x: .10
+            Button:
+                id: quit_button
+                background_normal: ''
+                background_color: 0, 0, 0, 1
+                text: ""
+                font_weight: 'Bold'
+                font_size: 40
+                color: 0, 0, 0, 1
+                size_hint_x: 0.2
 
-        Label:
-            pos: self.pos
-            size: self.size
-            allow_stretch: True
-            keep_ratio: False
-            source: 'meandjarred.png'
+<CustomDropDown>:
+    Button:
+        text: 'Automation'
+        font_weight: "Bold"
+        font_size: 20
+        size_hint_y: None
+        height: '48dp'
+        background_normal: ''
+        background_color: 0,0,0,1
+        on_press: root.select('Category: Automation')
 
-        Button:
-            id: button_2_sc3
-            background_normal: ''
-            background_color: 0, 0, 0, 1
-            text: ">"
-            color: 0.5, 0.5, 0.5, 1
-            font_size: 50
-            font_weight: "Bold"
-            size_hint_x: .10
+    Button:
+        text: 'Clothing'
+        font_weight: "Bold"
+        font_size: 20
+        size_hint_y: None
+        height: '48dp'
+        background_normal: ''
+        background_color: 0,0,0,1
+        on_press: root.select('Category: Clothing')
+
+    Button:
+        text: 'Food'
+        font_weight: "Bold"
+        font_size: 20
+        size_hint_y: None
+        height: '48dp'
+        background_normal: ''
+        background_color: 0,0,0,1
+        on_release: root.select('Category: Food')
+
+    Button:
+        text: 'Video Games'
+        font_weight: "Bold"
+        font_size: 20
+        size_hint_y: None
+        height: '48dp'
+        background_normal: ''
+        background_color: 0,0,0,1
+        on_press: root.select('Category: Video Games')
+
+    Button:
+        text: 'Personalized Ads'
+        font_weight: "Bold"
+        font_size: 20
+        size_hint_y: None
+        height: '48dp'
+        background_normal: ''
+        background_color: 0,0,0,1
+        on_press: root.select('Category: Personalized Ads')
 
 <Manager>:
     id: screen_manager
 
     screen_one: screen_one
-    screen_two: screen_two
-    screen_three: screen_three
 
     ScreenOne:
         id: screen_one
         name: "screen1"
-        manager: screen_manager
-
-    ScreenTwo:
-        id: screen_two
-        name: "screen2"
-        manager: screen_manager
-
-    ScreenThree:
-        id: screen_three
-        name: "screen3"
         manager: screen_manager

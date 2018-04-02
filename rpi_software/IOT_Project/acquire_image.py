@@ -9,10 +9,7 @@ from PIL import Image, ImageDraw
 cap = cv2.VideoCapture(0)
 
 # Replace with a valid subscription key (keeping the quotes in place).
-# apikey = open("apikeys.txt", "r").read()
 
-# KEY = 'bead87ccbe074693a5a793d101c8086d'
-KEY = 'b7ae1171b8ad4b68b3839034902418ec'
 CF.Key.set(KEY)
 
 BASE_URL = 'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/'  # Replace with your regional Base URL
@@ -31,7 +28,7 @@ if (cap.isOpened() == False):
 # frame_height = int(cap.get(4))
 
 ii = 0
-max = 2
+max = 1
 wait = 3000
 
 while(ii < max ):
