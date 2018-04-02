@@ -1,13 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion '26.0.2'
-
+    compileSdkVersion 27
+    buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId "com.microsoft.projectoxford.faceapisample"
         minSdkVersion 22
-        targetSdkVersion 22
+        targetSdkVersion 27
         versionCode 1
         versionName "1.0"
     }
@@ -17,17 +16,21 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    productFlavors {
+    }
 }
 
 dependencies {
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-    implementation 'com.android.support:design:22.2.1'
+    implementation 'com.android.support:design:27.1.0'
     compile fileTree(include: ['*.jar'], dir: 'libs')
-
     // Use the following line to include client library for Face API from Maven Central Repository
     compile 'com.microsoft.projectoxford:face:1.4.1'
-    compile 'com.android.support:appcompat-v7:22.1.0'
+    compile 'com.android.support:appcompat-v7:27.1.0'
     compile 'com.google.code.gson:gson:2.8.2'
-    compile 'com.google.android.gms:play-services:7.8+'
-
+    implementation 'com.google.android.gms:play-services-vision:12.0.1'
+    compile 'com.google.firebase:firebase-core:12.0.1'
+    implementation 'com.google.firebase:firebase-firestore:12.0.1'
 }
+
+apply plugin: 'com.google.gms.google-services'

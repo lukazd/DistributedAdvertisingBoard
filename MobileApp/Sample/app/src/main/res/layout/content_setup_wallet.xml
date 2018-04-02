@@ -73,7 +73,8 @@
             android:layout_height="wrap_content"
             android:text="@string/finish"
             android:layout_alignParentBottom="true"
-            style="@style/ButtonStyle"/>
+            style="@style/ButtonStyle"
+            android:onClick="SaveToFireBase"/>
 
     </RelativeLayout>
 

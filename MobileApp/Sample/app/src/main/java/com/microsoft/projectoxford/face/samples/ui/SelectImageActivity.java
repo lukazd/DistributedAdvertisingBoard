@@ -32,27 +32,41 @@
 //
 package com.microsoft.projectoxford.face.samples.ui;
 
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.microsoft.projectoxford.face.samples.BuildConfig;
 import com.microsoft.projectoxford.face.samples.R;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 // The activity for the user to select a image and to detect faces in the image.
 public class SelectImageActivity extends AppCompatActivity {
     // Flag to indicate the request of the next task to be performed
     private static final int REQUEST_TAKE_PHOTO = 0;
     private static final int REQUEST_SELECT_IMAGE_IN_ALBUM = 1;
-
+    private String mCurrentPhotoPath;
     // The URI of photo taken with camera
     private Uri mUriPhotoTaken;
 
@@ -85,12 +99,7 @@ public class SelectImageActivity extends AppCompatActivity {
             case REQUEST_TAKE_PHOTO:
             case REQUEST_SELECT_IMAGE_IN_ALBUM:
                 if (resultCode == RESULT_OK) {
-                    Uri imageUri;
-                    if (data == null || data.getData() == null) {
-                        imageUri = mUriPhotoTaken;
-                    } else {
-                        imageUri = data.getData();
-                    }
+                    Uri imageUri = Uri.parse(mCurrentPhotoPath);
                     Intent intent = new Intent();
                     intent.setData(imageUri);
                     setResult(RESULT_OK, intent);
@@ -110,14 +119,36 @@ public class SelectImageActivity extends AppCompatActivity {
             File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
             try {
                 File file = File.createTempFile("IMG_", ".jpg", storageDir);
-                mUriPhotoTaken = Uri.fromFile(file);
+
+                mUriPhotoTaken = FileProvider.getUriForFile(SelectImageActivity.this,
+                        BuildConfig.APPLICATION_ID + ".provider",
+                        createImageFile());
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, mUriPhotoTaken);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 startActivityForResult(intent, REQUEST_TAKE_PHOTO);
             } catch (IOException e) {
                 setInfo(e.getMessage());
             }
         }
     }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DCIM), "Camera");
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+        return image;
+    }
+
 
     // When the button of "Select a Photo in Album" is pressed.
     public void selectImageInAlbum(View view) {

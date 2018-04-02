@@ -2,10 +2,13 @@ package com.microsoft.projectoxford.face.samples.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -19,11 +22,18 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.microsoft.projectoxford.face.samples.BuildConfig;
 import com.microsoft.projectoxford.face.samples.R;
+import com.microsoft.projectoxford.face.samples.helper.SenseAdInfoModel;
 
 import org.json.JSONObject;
 
@@ -32,26 +42,32 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class SetupWallet extends AppCompatActivity {
 
-    private String personGroupId;
-    private String personName;
-    private String personId;
-    private String personPin;
+
+    private SharedPreferences prefs;
 
     private static final String LOG_TAG = "Barcode Scanner API";
     private static final int PHOTO_REQUEST = 10;
     private TextView scanResults;
     private BarcodeDetector detector;
     private Uri imageUri;
-    private static final int REQUEST_WRITE_PERMISSION = 20;
     private static final String SAVED_INSTANCE_URI = "uri";
     private static final String SAVED_INSTANCE_RESULT = "result";
     private static final int REQUEST_IMAGE_CAPTURE = 2;
     private String mCurrentPhotoPath;
-    private EditText editText;
+    private EditText iotaEditText;
+    private String iotaCode;
+    private SenseAdInfoModel senseAdInfo;
+
+    private boolean isEdit;
+
+    private FirebaseFirestore firestoreDB;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,13 +77,34 @@ public class SetupWallet extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        FirebaseApp.initializeApp(this);
+
         Bundle bundle = getIntent().getExtras();
+        String personName;
+        String personId;
+        String personGroupId;
+        String personPin = ""; //TODO are we using a pin still?
         if (bundle != null) {
-            personGroupId = bundle.getString("PersonGroupId");
+            personGroupId= bundle.getString("PersonGroupId");
             personName = bundle.getString("PersonName");
             personId = bundle.getString("PersonId");
             personPin = bundle.getString("personPin");
         }
+
+        prefs = getSharedPreferences("personal", MODE_PRIVATE);
+        personId = prefs.getString("PersonId", null);
+
+        personName = prefs.getString("name", "No name defined");//"No name defined" is the default value.
+        personPin = prefs.getString("pin", "XXXX"); //0 is the default value.
+        String sex = prefs.getString("sex", "male");
+        String bday = prefs.getString("bday", "Not defined");
+        Log.e("In wallet", bday);
+        String faceGroupName = prefs.getString("personGroupId", "large-person-group-1");
+        iotaCode = prefs.getString("iotaCode", null);
+
+        senseAdInfo = new SenseAdInfoModel(sex, bday, faceGroupName, personName, personId, personPin);
+
+        isEdit = iotaCode != null;
 
         Button browseButton = (Button) findViewById(R.id.button);
         scanResults = (TextView) findViewById(R.id.txtContent);
@@ -90,15 +127,22 @@ public class SetupWallet extends AppCompatActivity {
             }
         });
 
-        editText = (EditText) findViewById(R.id.wallet_address_edit);
+        iotaEditText = (EditText) findViewById(R.id.wallet_address_edit);
+
+        if(iotaCode != null){
+            iotaEditText.setText(iotaCode);
+        }
+
 
         detector = new BarcodeDetector.Builder(getApplicationContext())
                 .setBarcodeFormats(Barcode.DATA_MATRIX | Barcode.QR_CODE)
                 .build();
         if (!detector.isOperational()) {
-            scanResults.setText("Could not set up the detector!");
-            return;
+            scanResults.setText(R.string.cant_setup);
         }
+
+
+        firestoreDB = FirebaseFirestore.getInstance();
     }
 
     @Override
@@ -109,8 +153,7 @@ public class SetupWallet extends AppCompatActivity {
         }
 
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            File image = new File(mCurrentPhotoPath);
-            imageUri = Uri.parse("file://" + image.getAbsolutePath());
+            imageUri = Uri.parse(mCurrentPhotoPath);
             scanBarCode();
         }
     }
@@ -131,23 +174,27 @@ public class SetupWallet extends AppCompatActivity {
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
-                Uri photoURI = FileProvider.getUriForFile(this,
-                        "com.microsoft.projectoxford.faceapisample.fileprovider",
-                        photoFile);
+                Uri photoURI = null;
+                try {
+                    photoURI = FileProvider.getUriForFile(SetupWallet.this,
+                            BuildConfig.APPLICATION_ID + ".provider",
+                            createImageFile());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
             }
         }
     }
 
-    /**
-     * Creates and image file from a picture taken from the camera
-     */
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File storageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DCIM), "Camera");
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
                 ".jpg",         /* suffix */
@@ -155,7 +202,7 @@ public class SetupWallet extends AppCompatActivity {
         );
 
         // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = image.getAbsolutePath();
+        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
         return image;
     }
 
@@ -172,7 +219,8 @@ public class SetupWallet extends AppCompatActivity {
                     try {
                         JSONObject jsonObject = new JSONObject(code.displayValue);
                         String s = (String) jsonObject.get("address");
-                        editText.setText(s);
+                        iotaEditText.setText(s);
+                        senseAdInfo.setIotaCode(s);
                     } catch (Throwable throwable){
                         Log.e("QR Reader", "Could not pase malformed JSON");
                         scanResults.setText(R.string.try_again);
@@ -272,4 +320,36 @@ public class SetupWallet extends AppCompatActivity {
         return BitmapFactory.decodeStream(ctx.getContentResolver()
                 .openInputStream(uri), null, bmOptions);
     }
+
+    public void SaveToFireBase(View view) {
+        if(senseAdInfo.getIotaCode().length() != 90){
+            Snackbar.make(view, "IOTA Address Incorrect", Snackbar.LENGTH_LONG).show();
+            return;
+        }
+
+        addDocumentToCollection(senseAdInfo);
+
+    }
+
+    private void addDocumentToCollection(SenseAdInfoModel personInfo){
+          firestoreDB.collection("personInfo")
+                .document(personInfo.getPersonId())
+                .set(personInfo)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("Firestore", "DocumentSnapshot successfully written!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("Firestore", "Error adding event document", e);
+                        //TODO add error snackbar or toast
+                    }
+                });
+    }
+
+
+
 }
