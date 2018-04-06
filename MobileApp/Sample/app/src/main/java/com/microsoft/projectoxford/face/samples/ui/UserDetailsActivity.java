@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Debug;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -21,6 +20,7 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
 import com.microsoft.projectoxford.face.FaceServiceClient;
 import com.microsoft.projectoxford.face.contract.CreatePersonResult;
@@ -29,7 +29,6 @@ import com.microsoft.projectoxford.face.samples.helper.FaceClientApp;
 import com.microsoft.projectoxford.face.samples.persongroupmanagement.PersonActivity;
 
 import java.util.Calendar;
-import java.util.List;
 
 public class UserDetailsActivity extends AppCompatActivity {
     private String imgUri;
@@ -38,7 +37,6 @@ public class UserDetailsActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private SharedPreferences prefs;
     private String name;
-    private String pin;
     private static String bday;
     private String sex;
     private String faceGroup;
@@ -47,7 +45,7 @@ public class UserDetailsActivity extends AppCompatActivity {
     private Button nextButton;
     private boolean addedFaces;
     @SuppressLint("StaticFieldLeak")
-    private static EditText birthEdit;
+    private static TextView birthEdit;
     private boolean editMode;
     private Button setupWallet;
 
@@ -55,7 +53,7 @@ public class UserDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_details);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         // Get a support ActionBar corresponding to this toolbar
         ActionBar ab = getSupportActionBar();
@@ -65,15 +63,14 @@ public class UserDetailsActivity extends AppCompatActivity {
 
         faceGroup = "large-person-group-1"; //TODO hardcoded group for now.
         self = this;
-        progressBar = (ProgressBar) findViewById(R.id.createPersonLoader);
-        nameEditText = (EditText) findViewById(R.id.nameEditText);
-        pinEditText = (EditText) findViewById(R.id.pinEditText);
-        nextButton = (Button) findViewById(R.id.createPersonButton2);
-        birthEdit = (EditText) findViewById(R.id.birthEdit);
+        progressBar = findViewById(R.id.createPersonLoader);
+        nameEditText = findViewById(R.id.nameEditText);
+        nextButton = findViewById(R.id.createPersonButton2);
+        birthEdit = findViewById(R.id.birthEdit);
         progressBar.setVisibility(View.INVISIBLE);
         nextButton.setEnabled(true);
 
-        setupWallet = (Button) findViewById(R.id.setupWallet);
+        setupWallet = findViewById(R.id.setupWallet);
 
         prefs = getSharedPreferences("personal", MODE_PRIVATE);
         personId = prefs.getString("PersonId", null);
@@ -83,12 +80,10 @@ public class UserDetailsActivity extends AppCompatActivity {
             setupWallet.setEnabled(true);
 
             name = prefs.getString("name", "No name defined");//"No name defined" is the default value.
-            pin = prefs.getString("pin", "XXXX"); //0 is the default value.
             sex = prefs.getString("sex", "male");
             bday = prefs.getString("bday", "Not defined");
             birthEdit.setText(bday);
             nameEditText.setText(name);
-            pinEditText.setText(pin);
         }
 
         //DEBUG ONLY
@@ -111,25 +106,26 @@ public class UserDetailsActivity extends AppCompatActivity {
      */
     public void CreatePersonClick(View view) {
         String nameText = nameEditText.getText().toString();
-        String pinText = pinEditText.getText().toString();
-        String bdayText = birthEdit.getText().toString();
-        Log.e("Bith", bdayText);
-        bday = bdayText;
-        RadioGroup radioSexGroup = (RadioGroup) findViewById(R.id.radioSex);
+        bday =  birthEdit.getText().toString();
+        RadioGroup radioSexGroup = findViewById(R.id.radioSex);
         // get selected radio button from radioGroup
         int selectedId = radioSexGroup.getCheckedRadioButtonId();
         // find the radiobutton by returned id
-        RadioButton radioSexButton = (RadioButton) findViewById(selectedId);
+        RadioButton radioSexButton = findViewById(selectedId);
 
-        if(!pinText.equals("") && !nameText.equals("") && !bdayText.equals("")) {
+        if( !nameText.equals("") && !bday.equals("")) {
             if (personId == null) {
                 progressBar.setVisibility(View.VISIBLE);
                 nextButton.setEnabled(false);
-                new AddPersonTask(true, nameText, pinText, bdayText, radioSexButton.getText().toString()).execute(faceGroup);
+                new AddPersonTask(true, nameText, bday, radioSexButton.getText().toString()).execute(faceGroup);
             } else {
-                //TODO if personId is already created, then just add faces or update information
                 Snackbar snackbar = Snackbar.make(view, "Account already created", Snackbar.LENGTH_LONG);
                 snackbar.show();
+                Intent intent = new Intent(self, PersonActivity.class);
+                intent.putExtra("PersonId", personId);
+                intent.putExtra("PersonName", name);
+                intent.putExtra("PersonGroupId", faceGroup);
+                startActivity(intent);
             }
         }
         else{
@@ -139,16 +135,10 @@ public class UserDetailsActivity extends AppCompatActivity {
     }
 
     public void SetupWalletClick(View view) {
-        Intent intent = new Intent(this, SetupWallet.class);
-        intent.putExtra("PersonId", personId);
-        intent.putExtra("PersonName", name);
-        intent.putExtra("personPin", pin);
-        intent.putExtra("PersonGroupId", faceGroup);
-
+        Intent intent = new Intent(this, AdPrefsActivity.class);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("PersonId", personId);
         editor.putString("name", name);
-        editor.putString("pin", pin);
         editor.putString("bday", bday);
         editor.putString("sex", sex);
         editor.putString("personGroupId", faceGroup);
@@ -167,10 +157,9 @@ public class UserDetailsActivity extends AppCompatActivity {
         // Indicate the next step is to add face in this person, or finish editing this person.
         boolean mAddFace;
 
-        AddPersonTask (boolean addFace, String n, String p, String bd, String sx) {
+        AddPersonTask (boolean addFace, String n, String bd, String sx) {
             mAddFace = addFace;
             name  = n;
-            pin = p;
             bday = bd;
             sex = sx;
         }
@@ -217,12 +206,9 @@ public class UserDetailsActivity extends AppCompatActivity {
                 personId = result;
                 progressBar.setVisibility(View.INVISIBLE);
 
-                Log.e("eadsfasf", bday);
-
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putString("PersonId", personId);
                 editor.putString("name", name);
-                editor.putString("pin", pin);
                 editor.putString("bday", bday);
                 editor.putString("sex", sex);
                 editor.putString("personGroupId", faceGroup);
@@ -231,7 +217,6 @@ public class UserDetailsActivity extends AppCompatActivity {
                 Intent intent = new Intent(self, PersonActivity.class);
                 intent.putExtra("PersonId", personId);
                 intent.putExtra("PersonName", name);
-                intent.putExtra("personPin", pin);
                 intent.putExtra("PersonGroupId", faceGroup);
                 startActivity(intent);
                 addedFaces = true;

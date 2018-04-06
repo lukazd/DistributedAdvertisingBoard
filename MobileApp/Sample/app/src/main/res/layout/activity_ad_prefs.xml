@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.SetupWalletActivity">
+    tools:context="com.microsoft.projectoxford.face.samples.ui.AdPrefsActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -20,6 +20,6 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_setup_wallet" />
+    <include layout="@layout/content_ad_prefs" />
 
 </android.support.design.widget.CoordinatorLayout>

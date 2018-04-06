@@ -1,5 +1,7 @@
 package com.microsoft.projectoxford.face.samples.helper;
 
+import java.util.Map;
+
 public class SenseAdInfoModel{
     private String sex;
     private String bday;
@@ -7,15 +9,15 @@ public class SenseAdInfoModel{
     private String iotaCode;
     private String personName;
     private String personId;
-    private String personPin;
+    private Map<String, Float> adPrefs;
 
-    public SenseAdInfoModel(String sex, String bday, String faceGroupName, String personName, String personId, String personPin) {
+    public SenseAdInfoModel(String sex, String bday, String faceGroupName, String personName, String personId, Map<String, Float> adPrefs) {
         this.sex = sex;
         this.bday = bday;
         this.faceGroupName = faceGroupName;
         this.personName = personName;
         this.personId = personId;
-        this.personPin = personPin;
+        this.adPrefs = adPrefs;
     }
 
 
@@ -67,11 +69,11 @@ public class SenseAdInfoModel{
         this.personId = personId;
     }
 
-    public String getPersonPin() {
-        return personPin;
+    public Map<String, Float> getAdPrefs() {
+        return adPrefs;
     }
 
-    public void setPersonPin(String personPin) {
-        this.personPin = personPin;
+    public void setAdPrefs(Map<String, Float> adPrefs) {
+        this.adPrefs = adPrefs;
     }
 }

@@ -29,7 +29,6 @@ import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.microsoft.projectoxford.face.samples.BuildConfig;
 import com.microsoft.projectoxford.face.samples.R;
@@ -46,7 +45,9 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class SetupWallet extends AppCompatActivity {
+import static com.microsoft.projectoxford.face.samples.ui.AdPrefsActivity.AD_CATS;
+
+public class SetupWalletActivity extends AppCompatActivity {
 
 
     private SharedPreferences prefs;
@@ -63,6 +64,7 @@ public class SetupWallet extends AppCompatActivity {
     private EditText iotaEditText;
     private String iotaCode;
     private SenseAdInfoModel senseAdInfo;
+    private Map<String, Float> ad_map;
 
     private boolean isEdit;
 
@@ -83,26 +85,18 @@ public class SetupWallet extends AppCompatActivity {
         String personName;
         String personId;
         String personGroupId;
-        String personPin = ""; //TODO are we using a pin still?
-        if (bundle != null) {
-            personGroupId= bundle.getString("PersonGroupId");
-            personName = bundle.getString("PersonName");
-            personId = bundle.getString("PersonId");
-            personPin = bundle.getString("personPin");
-        }
 
         prefs = getSharedPreferences("personal", MODE_PRIVATE);
         personId = prefs.getString("PersonId", null);
 
         personName = prefs.getString("name", "No name defined");//"No name defined" is the default value.
-        personPin = prefs.getString("pin", "XXXX"); //0 is the default value.
         String sex = prefs.getString("sex", "male");
         String bday = prefs.getString("bday", "Not defined");
-        Log.e("In wallet", bday);
         String faceGroupName = prefs.getString("personGroupId", "large-person-group-1");
         iotaCode = prefs.getString("iotaCode", null);
-
-        senseAdInfo = new SenseAdInfoModel(sex, bday, faceGroupName, personName, personId, personPin);
+        ad_map = new HashMap<>();
+        getAdPrefs();
+        senseAdInfo = new SenseAdInfoModel(sex, bday, faceGroupName, personName, personId, ad_map);
 
         isEdit = iotaCode != null;
 
@@ -145,6 +139,12 @@ public class SetupWallet extends AppCompatActivity {
         firestoreDB = FirebaseFirestore.getInstance();
     }
 
+    private void getAdPrefs(){
+        for (String AD_CAT : AD_CATS) {
+            ad_map.put(AD_CAT, prefs.getFloat(AD_CAT, 5f));
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PHOTO_REQUEST && resultCode == RESULT_OK) {
@@ -176,7 +176,7 @@ public class SetupWallet extends AppCompatActivity {
             if (photoFile != null) {
                 Uri photoURI = null;
                 try {
-                    photoURI = FileProvider.getUriForFile(SetupWallet.this,
+                    photoURI = FileProvider.getUriForFile(SetupWalletActivity.this,
                             BuildConfig.APPLICATION_ID + ".provider",
                             createImageFile());
                 } catch (IOException e) {
@@ -322,10 +322,13 @@ public class SetupWallet extends AppCompatActivity {
     }
 
     public void SaveToFireBase(View view) {
-        if(senseAdInfo.getIotaCode().length() != 90){
+        if(iotaCode == null || senseAdInfo.getIotaCode().length() != 90){
             Snackbar.make(view, "IOTA Address Incorrect", Snackbar.LENGTH_LONG).show();
             return;
         }
+        SharedPreferences.Editor editor =  prefs.edit();
+        editor.putString("iotaCode", iotaCode);
+        editor.apply();
 
         addDocumentToCollection(senseAdInfo);
 
@@ -349,7 +352,4 @@ public class SetupWallet extends AppCompatActivity {
                     }
                 });
     }
-
-
-
 }

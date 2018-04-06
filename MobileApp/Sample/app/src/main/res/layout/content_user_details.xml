@@ -42,20 +42,6 @@
                 android:inputType="textPersonName"
                 android:hint="@string/name" />
 
-            <TextView
-                android:id="@+id/textView3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/Pin" />
-
-            <EditText
-                android:id="@+id/pinEditText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="@string/exPin"
-                android:inputType="number" />
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -70,12 +56,10 @@
                     android:layout_height="wrap_content"
                     android:text="@string/set_birthday"
                     android:onClick="showDatePickerDialog" />
-                <EditText
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:labelFor="@id/textViewAge"
-                    android:enabled="false"
-                    android:hint="@string/press_button_to_set"
+                    android:text="@string/PressButtonSet"
                     android:id="@+id/birthEdit"/>
             </LinearLayout>
             <TextView
@@ -138,8 +122,6 @@
                 android:onClick="CreatePersonClick"
                 android:layout_weight="1"
                 android:layout_marginEnd="5dp"
-                android:layout_marginStart="5dp"
-                android:layout_marginBottom="5dp"
                 style="@style/ButtonStyle"
                 />
 
@@ -148,12 +130,10 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="@string/setup_wallet"
+                android:text="@string/set_preferences"
                 android:onClick="SetupWalletClick"
                 android:enabled="false"
-                android:layout_marginEnd="5dp"
                 android:layout_marginStart="5dp"
-                android:layout_marginBottom="5dp"
                 style="@style/ButtonStyle"
                 />
 

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.microsoft.projectoxford.face.samples.ui.AdPrefsActivity"
+    tools:showIn="@layout/activity_ad_prefs">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ProgressBar
+            android:id="@+id/fourProgressbar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:progress="60" />
+
+        <TextView
+            android:id="@+id/help_prefs_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/fourProgressbar"
+            android:text="@string/prefs_help"/>
+
+        <ListView
+            android:layout_below="@id/help_prefs_text"
+            android:id="@+id/ad_prefs_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/setupWalletButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/setup_wallet"
+            android:layout_alignParentBottom="true"
+            style="@style/ButtonStyle"
+            android:onClick="SetupWalletClick2"/>
+    </RelativeLayout>
+
+</android.support.constraint.ConstraintLayout>
