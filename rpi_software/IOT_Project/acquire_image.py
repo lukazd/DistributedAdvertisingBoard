@@ -5,18 +5,28 @@ import requests
 from io import BytesIO
 from PIL import Image, ImageDraw
 
+# Import library for implementing delays
+import time
+
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 # Specify the camera to use, 0 = built-in
 cap = cv2.VideoCapture(0)
 
 # Replace with a valid subscription key (keeping the quotes in place).
-
+# file = open('keys.txt', 'r')
+# KEY = file.readline()
+# KEY = 'bead87ccbe074693a5a793d101c8086d'
+KEY = '5af6e0825d3b41119e86f1c9634bb3d5'
 CF.Key.set(KEY)
 
-BASE_URL = 'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/'  # Replace with your regional Base URL
+# Replace with your regional Base URL
+BASE_URL = 'https://westus.api.cognitive.microsoft.com/face/v1.0/'
 CF.BaseUrl.set(BASE_URL)
 
 # If you need to, you can change your base API url with:
-#CF.BaseUrl.set('https://westcentralus.api.cognitive.microsoft.com/face/v1.0/')
+# CF.BaseUrl.set('https://westcentralus.api.cognitive.microsoft.com/face/v1.0/')
 
 # Check if camera opened successfully
 if (cap.isOpened() == False):
@@ -29,11 +39,11 @@ if (cap.isOpened() == False):
 
 ii = 0
 max = 1
-wait = 3000
+wait = 2
 
 while(ii < max ):
     # Code for waiting after frame (integer value to mili-seconds)
-    cv2.waitKey(wait)
+    time.sleep(wait)
 
     # Capture frame-by-frame
     ret, frame = cap.read()
@@ -45,8 +55,6 @@ while(ii < max ):
         cv2.imwrite('newImage.jpg', color_obj)
 
         faces = CF.face.detect('newImage.jpg')
-        print(faces)
-
 
         # Convert width height to a point in a rectangle
         def getRectangle(faceDictionary):
@@ -72,16 +80,9 @@ while(ii < max ):
         img.show()
 
         ii = ii + 1
-    # Break the loop
-    else:
         break
 
 
 # When everything done, release the capture
 cap.release()
 cv2.destroyAllWindows()
-
-# Source for code:
-# https://www.learnopencv.com/read-write-and-display-a-video-using-opencv-cpp-python/
-# https://kivy.org/docs/api-kivy.uix.videoplayer.html
-# https://kivy.org/docs/api-kivy.uix.image.html

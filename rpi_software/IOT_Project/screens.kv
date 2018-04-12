@@ -45,8 +45,8 @@
                 background_color: 0, 0, 0, 1
                 text: ""
                 font_weight: 'Bold'
-                font_size: 20
-                color: 0.54, 0.824, 1, 1
+                font_size: 30
+                color: 0, 0.8, 0, 1
                 size_hint_x: 0.2
 
         BoxLayout:
@@ -71,9 +71,8 @@
                 keep_ratio: False
                 size_hint_x: 0.8
                 background_normal: ''
-                background_color: 0, 0, 0, 1
-                color: 0, 0, 0, 1
-
+                background_color: 0,0,0,1
+                source: 'background.jpg'
             Button:
                 id: right_button
                 background_normal: ''
@@ -121,15 +120,16 @@
                 size_hint_x: 0.2
 
 <CustomDropDown>:
+    id: dropDownID
     Button:
-        text: 'Automation'
+        text: 'Cars'
         font_weight: "Bold"
         font_size: 20
         size_hint_y: None
         height: '48dp'
         background_normal: ''
         background_color: 0,0,0,1
-        on_press: root.select('Category: Automation')
+        on_press: root.select('Category: Cars')
 
     Button:
         text: 'Clothing'
