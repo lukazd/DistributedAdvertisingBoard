@@ -1,0 +1,3 @@
+buick, cars, female, 35, sunny, warm
+rangerover, cars, male, 45, cloudy, cold
+kia, cars, female, 40, sunny, hot
