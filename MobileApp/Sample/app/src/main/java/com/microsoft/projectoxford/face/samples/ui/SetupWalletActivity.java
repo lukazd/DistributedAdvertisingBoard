@@ -68,7 +68,9 @@ public class SetupWalletActivity extends AppCompatActivity {
 
     private boolean isEdit;
 
+
     private FirebaseFirestore firestoreDB;
+    private SetupWalletActivity self;
 
 
     @Override
@@ -80,6 +82,7 @@ public class SetupWalletActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         FirebaseApp.initializeApp(this);
+        self = this;
 
         Bundle bundle = getIntent().getExtras();
         String personName;
@@ -322,6 +325,8 @@ public class SetupWalletActivity extends AppCompatActivity {
     }
 
     public void SaveToFireBase(View view) {
+        senseAdInfo.setIotaCode(iotaEditText.getText().toString());
+        iotaCode = senseAdInfo.getIotaCode();
         if(iotaCode == null || senseAdInfo.getIotaCode().length() != 90){
             Snackbar.make(view, "IOTA Address Incorrect", Snackbar.LENGTH_LONG).show();
             return;
@@ -342,13 +347,15 @@ public class SetupWalletActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d("Firestore", "DocumentSnapshot successfully written!");
+                        Intent intent = new Intent(self, LoggedInActivity.class);
+                        startActivity(intent);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Log.w("Firestore", "Error adding event document", e);
-                        //TODO add error snackbar or toast
+                        Snackbar.make(self.findViewById(R.id.ratingBar), "Problems Saving Information, Try again.", Snackbar.LENGTH_LONG).show();
                     }
                 });
     }
