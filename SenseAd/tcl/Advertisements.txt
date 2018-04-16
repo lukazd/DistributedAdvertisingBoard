@@ -1,3 +1,3 @@
-buick, cars, female, 35, sunny, warm
-rangerover, cars, male, 45, cloudy, cold
-kia, cars, female, 40, sunny, hot
+0001, buick, cars, female, 35, sunny, warm
+0002, rangerover, cars, male, 45, cloudy, cold
+0003, kia, cars, female, 40, sunny, hot

@@ -2,7 +2,8 @@
 
 
 class Advertisement:
-    def __init__(self, company, category, gender, agerange, weather, temperature):
+    def __init__(self, ad_id, company, category, gender, agerange, weather, temperature):
+        self.ad_id = ad_id
         self.company = company
         self.category = category
         self.gender = gender

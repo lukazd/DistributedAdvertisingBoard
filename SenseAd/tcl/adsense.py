@@ -1,11 +1,12 @@
 from tcl.adsense_classes import Advertisement, Sensors, User
+import operator
 
 ad_data = []
 with open("Advertisements.txt") as file_ads:
     line = file_ads.readline()
     while line:
         elmts = line.split(',')
-        ad = Advertisement(elmts[0], elmts[1], elmts[2], elmts[3], elmts[4], elmts[5])
+        ad = Advertisement(elmts[0], elmts[1], elmts[2], elmts[3], elmts[4], elmts[5], elmts[6])
         ad_data.append(ad)
         line = file_ads.readline()
 
@@ -29,6 +30,7 @@ with open("Users.txt") as file_users:
 
 test_user = user_data[0]
 test_sensor = sensor_data[0]
+ad_results = {}
 for ad in ad_data:
     count = 0
     if ad.company.strip() == test_user.companies.strip():
@@ -41,4 +43,10 @@ for ad in ad_data:
         count += 1
     if ad.temp.strip() == test_sensor.temp.strip():
         count += 1
-    print(ad.company, count, sep=' ')
+    ad_results.update({ad.ad_id : count})
+
+    print(ad.ad_id, count, sep=' ')
+    print(ad_results)
+
+sorted_ad_results = sorted(ad_results.items(), key=operator.itemgetter(1))
+print(sorted_ad_results)
