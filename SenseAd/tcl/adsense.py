@@ -1,9 +1,13 @@
 from tcl.adsense_classes import Advertisement, Sensors, User
 import operator
-
+import os
 import firebase_admin
 from firebase_admin import credentials
+from google.cloud import firestore
 from firebase_admin import firestore
+
+
+
 
 # Use a service account
 cred = credentials.Certificate('tcl/keys/distributedadvertisingboard-firebase-adminsdk-uolqk-4575dfc16f.json')
