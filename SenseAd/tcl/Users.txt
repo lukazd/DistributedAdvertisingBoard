@@ -1,0 +1,4 @@
+female, 35, target, hiking
+male, 30, target, hiking
+female, 49, honda, food
+male, 49, wendy's, video games

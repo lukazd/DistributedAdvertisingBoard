@@ -1,6 +1,9 @@
 package com.microsoft.projectoxford.face.samples.ui;
 
 import android.annotation.SuppressLint;
+import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -12,14 +15,20 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
 
 import com.microsoft.projectoxford.face.FaceServiceClient;
 import com.microsoft.projectoxford.face.contract.CreatePersonResult;
 import com.microsoft.projectoxford.face.samples.R;
 import com.microsoft.projectoxford.face.samples.helper.FaceClientApp;
 import com.microsoft.projectoxford.face.samples.persongroupmanagement.PersonActivity;
+
+import java.util.Calendar;
 
 public class UserDetailsActivity extends AppCompatActivity {
     private String imgUri;
@@ -28,46 +37,55 @@ public class UserDetailsActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private SharedPreferences prefs;
     private String name;
-    private String pin;
+    private static String bday;
+    private String sex;
     private String faceGroup;
     private EditText nameEditText;
     private EditText pinEditText;
     private Button nextButton;
     private boolean addedFaces;
+    @SuppressLint("StaticFieldLeak")
+    private static TextView birthEdit;
+    private boolean editMode;
+    private Button setupWallet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_details);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         // Get a support ActionBar corresponding to this toolbar
-        ActionBar ab = getSupportActionBar();
-        // Enable the Up button
-        assert ab != null;
-        ab.setDisplayHomeAsUpEnabled(true);
 
-        faceGroup = "large-person-group-1";
+
+        faceGroup = "large-person-group-1"; //TODO hardcoded group for now.
         self = this;
-        progressBar = (ProgressBar) findViewById(R.id.createPersonLoader);
-        nameEditText = (EditText) findViewById(R.id.nameEditText);
-        pinEditText = (EditText) findViewById(R.id.pinEditText);
-        nextButton = (Button) findViewById(R.id.createPersonButton2);
+        progressBar = findViewById(R.id.createPersonLoader);
+        nameEditText = findViewById(R.id.nameEditText);
+        nextButton = findViewById(R.id.createPersonButton2);
+        birthEdit = findViewById(R.id.birthEdit);
         progressBar.setVisibility(View.INVISIBLE);
         nextButton.setEnabled(true);
 
+        setupWallet = findViewById(R.id.setupWallet);
+
         prefs = getSharedPreferences("personal", MODE_PRIVATE);
         personId = prefs.getString("PersonId", null);
+        editMode = false;
         if (personId != null) {
-            name = prefs.getString("PersonName", "No name defined");//"No name defined" is the default value.
-            pin = prefs.getString("pin", "XXXX"); //0 is the default value.
+            editMode = true;
+            setupWallet.setEnabled(true);
+
+            name = prefs.getString("name", "No name defined");//"No name defined" is the default value.
+            sex = prefs.getString("sex", "male");
+            bday = prefs.getString("bday", "Not defined");
+            birthEdit.setText(bday);
             nameEditText.setText(name);
-            pinEditText.setText(pin);
         }
 
-        //TODO DEBUG ONLY
-        this.getSharedPreferences("personal", MODE_PRIVATE).edit().clear().apply();
-        personId = null;
+        //DEBUG ONLY
+        //this.getSharedPreferences("personal", MODE_PRIVATE).edit().clear().apply();
+        //personId = null;
         //END DEBUG ONLY
 
     }
@@ -75,9 +93,7 @@ public class UserDetailsActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();  // Always call the superclass method first
-
         if(addedFaces){
-            Button setupWallet = (Button) findViewById(R.id.setupWallet);
             setupWallet.setEnabled(true);
         }
     }
@@ -87,17 +103,26 @@ public class UserDetailsActivity extends AppCompatActivity {
      */
     public void CreatePersonClick(View view) {
         String nameText = nameEditText.getText().toString();
-        String pinText = pinEditText.getText().toString();
+        bday =  birthEdit.getText().toString();
+        RadioGroup radioSexGroup = findViewById(R.id.radioSex);
+        // get selected radio button from radioGroup
+        int selectedId = radioSexGroup.getCheckedRadioButtonId();
+        // find the radiobutton by returned id
+        RadioButton radioSexButton = findViewById(selectedId);
 
-        if(!pinText.equals("") && !nameText.equals("")) {
+        if( !nameText.equals("") && !bday.equals("")) {
             if (personId == null) {
                 progressBar.setVisibility(View.VISIBLE);
                 nextButton.setEnabled(false);
-                new AddPersonTask(true, nameText, pinText).execute(faceGroup);
+                new AddPersonTask(true, nameText, bday, radioSexButton.getText().toString()).execute(faceGroup);
             } else {
-                //TODO if personId is already created, then just add faces
                 Snackbar snackbar = Snackbar.make(view, "Account already created", Snackbar.LENGTH_LONG);
                 snackbar.show();
+                Intent intent = new Intent(self, PersonActivity.class);
+                intent.putExtra("PersonId", personId);
+                intent.putExtra("PersonName", name);
+                intent.putExtra("PersonGroupId", faceGroup);
+                startActivity(intent);
             }
         }
         else{
@@ -107,12 +132,20 @@ public class UserDetailsActivity extends AppCompatActivity {
     }
 
     public void SetupWalletClick(View view) {
-        Intent intent = new Intent(this, SetupWallet.class);
-        intent.putExtra("PersonId", personId);
-        intent.putExtra("PersonName", name);
-        intent.putExtra("personPin", pin);
-        intent.putExtra("PersonGroupId", faceGroup);
+        Intent intent = new Intent(this, AdPrefsActivity.class);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("PersonId", personId);
+        editor.putString("name", name);
+        editor.putString("bday", bday);
+        editor.putString("sex", sex);
+        editor.putString("personGroupId", faceGroup);
+        editor.apply();
         startActivity(intent);
+    }
+
+    public void showDatePickerDialog(View view) {
+        DialogFragment newFragment = new DatePickerFragment();
+        newFragment.show(getFragmentManager(), "datePicker");
     }
 
     // Background task of adding a person to large-person group.
@@ -121,10 +154,11 @@ public class UserDetailsActivity extends AppCompatActivity {
         // Indicate the next step is to add face in this person, or finish editing this person.
         boolean mAddFace;
 
-        AddPersonTask (boolean addFace, String n, String p) {
+        AddPersonTask (boolean addFace, String n, String bd, String sx) {
             mAddFace = addFace;
             name  = n;
-            pin = p;
+            bday = bd;
+            sex = sx;
         }
 
         @Override
@@ -167,27 +201,47 @@ public class UserDetailsActivity extends AppCompatActivity {
             if (result != null) {
                 Log.i("Faceclient", "Response: Success. Person " + result + " created.");
                 personId = result;
-
                 progressBar.setVisibility(View.INVISIBLE);
 
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putString("PersonId", personId);
                 editor.putString("name", name);
-                editor.putString("pin", pin);
+                editor.putString("bday", bday);
+                editor.putString("sex", sex);
+                editor.putString("personGroupId", faceGroup);
                 editor.apply();
                 nextButton.setEnabled(true);
                 Intent intent = new Intent(self, PersonActivity.class);
                 intent.putExtra("PersonId", personId);
                 intent.putExtra("PersonName", name);
-                intent.putExtra("personPin", pin);
                 intent.putExtra("PersonGroupId", faceGroup);
                 startActivity(intent);
-
-                //TODO not good error checking...
                 addedFaces = true;
-
             }
         }
     }
+
+    public static class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // Use the current date as the default date in the picker
+            final Calendar c = Calendar.getInstance();
+            int year = c.get(Calendar.YEAR);
+            int month = c.get(Calendar.MONTH) + 1;
+            int day = c.get(Calendar.DAY_OF_MONTH);
+
+            // Create a new instance of DatePickerDialog and return it
+            return new DatePickerDialog(getActivity(), this, year, month, day);
+        }
+
+        public void onDateSet(DatePicker view, int year, int month, int day) {
+            // Do something with the date chosen by the user
+            String sb = String.valueOf(month + 1) + "/" + day + "/" + year;
+            assert birthEdit != null;
+            birthEdit.setText(sb);
+            bday = sb;
+        }
+    }
+
 
 }

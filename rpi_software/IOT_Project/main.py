@@ -26,7 +26,8 @@ cap = cv2.VideoCapture(0)
 
 # Import
 import cognitive_face as CF
-
+file = open('keys.txt', 'r')
+KEY = file.readline()
 CF.Key.set(KEY)
 BASE_URL = 'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/'  # Replace with your regional Base URL
 CF.BaseUrl.set(BASE_URL)
@@ -66,9 +67,9 @@ class ScreenOne(Screen):
         lock = threading.Lock()
         # Start a separate thread for user recognition
         global camera_thread
-        camera_thread = threading.Thread(target=self.acquireImage)
-        camera_thread.start()
-        camera_thread.join()
+        #camera_thread = threading.Thread(target=self.acquireImage)
+        #camera_thread.start()
+        #camera_thread.join()
         # Start a separate thread for GUI
         global main_thread
         main_thread = threading.Thread(target=self.set_init_widgets)
@@ -86,14 +87,13 @@ class ScreenOne(Screen):
             ret, frame = cap.read()
             # Check if frame was successfully acquired
             if ret == True:
-                print('camera')
                 # Our operations on the frame come here
                 color_obj = cv2.cvtColor(frame, cv2.COLORMAP_BONE)
                 # Write the frame into the file newImage.jpg
                 cv2.imwrite('environment_image.png', color_obj)
                 check = main_thread.isAlive()
                 print(check)
-                # faces = CF.face.detect('newImage.jpg')
+                faces = CF.face.detect('environment_image.png')
                 # Communicate with user faces database here
                 #
                 # If face is of a user, proceed to next stage
@@ -132,36 +132,49 @@ class ScreenOne(Screen):
     ###############################################################
     @mainthread
     def set_init_widgets(self):
+        # Initialize timer label to blank
+        self.ids.timer_label.text = ""
         # Bind buttons on GUI to specific functions
         self.ids.left_button.bind(on_press=self.go_left)
         self.ids.right_button.bind(on_press=self.go_right)
         self.ids.quit_button.bind(on_press=self.quit_main)
         # Instantiate DropDown button
+        global dropdown
         dropdown = CustomDropDown()
         self.ids.categ_button.bind(on_release=dropdown.open)
         # dropdown.bind(on_select=lambda instance, x: setattr(self.ids.categ_button, 'text', x))
-        dropdown.bind(on_select=self.setUp_viewer_ads)
+        dropdown.bind(on_select=lambda instance,x: setattr(self.ids.categ_button, 'text', x))
+        dropdown.bind(on_dismiss=lambda x: self.setUp_viewer_ads())
         # Disable category, go left, go right, and quit buttons at start
         self.ids.left_button.disabled = True
         self.ids.right_button.disabled = True
-        self.ids.categ_button.disabled = True
+        self.ids.categ_button.disabled = False
         self.ids.quit_button.disabled = True
 
-    ####################################################################
-    #
-    #
-    ####################################################################
-    @mainthread
-    def setUp_viewer_ads(self,instance, x):
-        pass
+        # Clock.schedule_once(lambda dt: self.timer_label_count(0), 0)
 
     ####################################################################
     #
     #
     ####################################################################
     @mainthread
-    def timer_label_adj(self):
-        pass
+    def setUp_viewer_ads(self):
+        print(self.ids.categ_button.text)
+        self.ids.center_image.source = 'newImage.png'
+
+    ####################################################################
+    #
+    #
+    ####################################################################
+    @mainthread
+    def timer_label_count(self,num):
+        if num == 10:
+            self.ids.timer_label.color = 1, 0, 0, 1
+            self.ids.timer_label.text = str(num)
+            return
+        num += 1
+        self.ids.timer_label.text = str(num)
+        Clock.schedule_once(lambda dt: self.timer_label_count(num), 1)
 
     #############################################################
     # Function for implementing an action when the user presses

@@ -34,6 +34,7 @@ package com.microsoft.projectoxford.face.samples.helper;
 
 import android.app.Application;
 
+import com.google.firebase.FirebaseApp;
 import com.microsoft.projectoxford.face.FaceServiceClient;
 import com.microsoft.projectoxford.face.FaceServiceRestClient;
 import com.microsoft.projectoxford.face.samples.R;
@@ -42,6 +43,7 @@ public class FaceClientApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        FirebaseApp.initializeApp(this);
         sFaceServiceClient = new FaceServiceRestClient(getString(R.string.endpoint), getString(R.string.subscription_key));
     }
 

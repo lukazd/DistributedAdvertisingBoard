@@ -42,19 +42,63 @@
                 android:inputType="textPersonName"
                 android:hint="@string/name" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/textViewAge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/birthday" />
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/set_birthday"
+                    android:onClick="showDatePickerDialog" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/PressButtonSet"
+                    android:id="@+id/birthEdit"/>
+            </LinearLayout>
             <TextView
-                android:id="@+id/textView3"
-                android:layout_width="match_parent"
+                android:id="@+id/textViewGender"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/Pin" />
+                android:text="@string/i_identify_my_gender_as"/>
 
-            <EditText
-                android:id="@+id/pinEditText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="@string/exPin"
-                android:inputType="number" />
+            <RadioGroup
+                android:id="@+id/radioSex"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
+
+                <RadioButton
+                    android:id="@+id/radioMale"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/radio_male"
+                    android:checked="true" />
+
+                <RadioButton
+                    android:id="@+id/radioFemale"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/radio_female" />
+
+                <RadioButton
+                    android:id="@+id/radioTrans"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/trans" />
+
+                <RadioButton
+                    android:id="@+id/radioNonDisc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/non_disclose" />
+            </RadioGroup>
+
             <ProgressBar
                 android:id="@+id/createPersonLoader"
                 style="?android:attr/progressBarStyle"
@@ -78,8 +122,6 @@
                 android:onClick="CreatePersonClick"
                 android:layout_weight="1"
                 android:layout_marginEnd="5dp"
-                android:layout_marginStart="5dp"
-                android:layout_marginBottom="5dp"
                 style="@style/ButtonStyle"
                 />
 
@@ -88,12 +130,10 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="@string/setup_wallet"
+                android:text="@string/set_preferences"
                 android:onClick="SetupWalletClick"
                 android:enabled="false"
-                android:layout_marginEnd="5dp"
                 android:layout_marginStart="5dp"
-                android:layout_marginBottom="5dp"
                 style="@style/ButtonStyle"
                 />
 

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".ui.SetupWallet"
+    tools:context=".ui.SetupWalletActivity"
     tools:showIn="@layout/activity_setup_wallet">
     <RelativeLayout
         android:layout_width="wrap_content"
@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:progress="66" />
+            android:progress="85" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -73,7 +73,8 @@
             android:layout_height="wrap_content"
             android:text="@string/finish"
             android:layout_alignParentBottom="true"
-            style="@style/ButtonStyle"/>
+            style="@style/ButtonStyle"
+            android:onClick="SaveToFireBase"/>
 
     </RelativeLayout>
 
