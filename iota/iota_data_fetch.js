@@ -6,7 +6,7 @@ var iota = new IOTA({ provider: 'http://node04.iotatoken.nl:14265' })
 // Init State
 //let root = 'ZMYUUZSLALHDLXXQGAKZSZNIDWXJEHYDIWBVRJFCOYDTXSDXMFQBODQGWLU9YEDHOIKOREDYHPXHMBAPI'
 let root = "XMHQELYZVSDEMWVCSNKCFUMMWJZOJGBCD9EKZVNLETHIBIZEIHBGFEBWQLEVQYKEMBOPPDRGJSNE9WRHB"
-let nextRoot = ""
+let nextRoot = root
 
 // Initialise MAM State
 var mamState = Mam.init(iota)
@@ -25,11 +25,18 @@ const publish = async packet => {
 // Callback used to pass data out of the fetch
 const logData = data => console.log(JSON.parse(iota.utils.fromTrytes(data)))
 
-const execute = async () => {
-  var resp = await Mam.fetch(root, 'public', null, logData)
+async function execute() {
+  var resp = await Mam.fetchSingle(nextRoot, 'public', null)
 
-  // This is needed to get the next data
-  nextRoot = resp['nextRoot'])
+  if (resp != null) {
+    // This is needed to get the next data
+    nextRoot = resp.nextRoot
+    //messages = iota.utils.fromTrytes(resp.messages)
+    messages = iota.utils.fromTrytes(resp.payload)
+    console.log(messages)
+  }
+
+  setTimeout(() => execute(), 1000)
 }
 
 execute()
