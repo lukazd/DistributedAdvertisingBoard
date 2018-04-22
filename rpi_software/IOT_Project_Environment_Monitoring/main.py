@@ -60,8 +60,7 @@ class AcquireData:
     def acq_Weather(self):
         # Acquire weather information
         # Setup sensor to acquire data
-        sensor = BME280(p_mode = 'BME280_OSAMPLE_8', t_mode = 'BME280_OSAMPLE_2', h_mode = 'BME280_OSAMPLE_1',
-                        filter = 'BME280_FILTER_16')
+        sensor = BME280('BME280_OSAMPLE_8', 'BME280_OSAMPLE_2', 'BME280_OSAMPLE_1', 'BME280_FILTER_16')
         # Initialize counter
         ii = 0
 
@@ -108,7 +107,7 @@ class AcquireData:
         ave_press = sum(press_arr) / float(len(press_arr))
 
         # Send data to database
-
+        print(ave_temp)
         # Reset global variables
         num_ppl_count = 0
         temp_arr.clear()

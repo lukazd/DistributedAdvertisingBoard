@@ -1,9 +1,10 @@
 let Mam = require('./MAM/lib/mam.node.js');
 let IOTA = require('iota.lib.js');
 
-var iota = new IOTA({ provider: 'https://iotanode.us:443' })
+//var iota = new IOTA({ provider: 'https://iotanode.us:443' })
+var iota = new IOTA({ provider: 'http://node04.iotatoken.nl:14265' })
 
-let data = 'Temperature: 22, Humidity: 23, Traffic: 5'
+let data = 'KDHGKCGIEJAKCKNGdagiengkakdhgkaidoqhdjgnajbajdfqpoifasdjknflakndgsdlfkjsldkfjsldkfjlksdflkjsdflkjsdlfkjsdfkljsdflkjsdflkjsdflkjsdflkjsdflkjsflkjsdflkjsdflkjsdflkjsdflkjsdflkjsdflkjsdlfkjsdflkjsflkjsdlfkjsdflkjsdflkjsfdlkjsflkjsdlkjsfkljsdflkjsflkjsflkjsflkjsdflkjsflkjsflkjsdlfkjsdfkj'
 
 let seed = process.env.IOTA_SEED;
 
