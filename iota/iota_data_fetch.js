@@ -1,6 +1,16 @@
+// Firestore setup
+const admin = require('firebase-admin');
+var serviceAccount = require('../keys/distributedadvertisingboard-firebase-adminsdk-uolqk-2634f4c974.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+var db = admin.firestore();
+
+// IOTA setup
 var Mam = require('./MAM/lib/mam.node.js')
 var IOTA = require('iota.lib.js')
-//var iota = new IOTA({ provider: 'https://iotanode.us:443'})
 var iota = new IOTA({ provider: 'http://node04.iotatoken.nl:14265' })
 
 // Init State
@@ -12,7 +22,6 @@ let nextRoot = root
 var mamState = Mam.init(iota)
 
 // Publish to tangle
-
 const publish = async packet => {
   var trytes = iota.utils.toTrytes(JSON.stringify(packet))
   var message = Mam.create(mamState, trytes)

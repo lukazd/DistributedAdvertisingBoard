@@ -1,10 +1,9 @@
-# Import main python library for numerical calculations
 import numpy as np
-from PIL import Image, ImageDraw
-# Import library for implementing delays
 import time
-# Import library for multi-threading
 import threading
+import cv2
+
+import cognitive_face as CF
 
 # Import various kivy libraries
 import kivy
@@ -19,18 +18,18 @@ from kivy.properties import ObjectProperty
 from kivy.uix.image import AsyncImage
 from kivy.core.window import Window
 
+from PIL import Image, ImageDraw
+
 # Import camera object for python
-import cv2
 # Specify the camera to use, 0 = built-in
 cap = cv2.VideoCapture(0)
 
 # Import
-import cognitive_face as CF
-file = open('keys.txt', 'r')
-KEY = file.readline()
-CF.Key.set(KEY)
-BASE_URL = 'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/'  # Replace with your regional Base URL
-CF.BaseUrl.set(BASE_URL)
+#file = open('keys.txt', 'r')
+#KEY = file.readline()
+#CF.Key.set(KEY)
+#BASE_URL = 'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/'  # Replace with your regional Base URL
+#CF.BaseUrl.set(BASE_URL)
 
 ## Import firebase library
 # import firebase_admin
