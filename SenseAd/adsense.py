@@ -1,5 +1,19 @@
 from adsense_classes import Advertisement, Sensors, User
 from google.cloud import firestore
+from sklearn.datasets import load_iris
+from sklearn.ensemble import RandomForestClassifier
+import pandas as pd
+import numpy as np
+
+np.random.seed(0)
+
+
+iris = load_iris()
+df = pd.DataFrame(iris.data, columns=iris.feature_names)
+print(df.head())
+df['species'] = pd.Categorical.from_codes(iris.target, iris.target_names)
+print("----after species addition-----")
+print(df.head())
 
 
 db = firestore.Client()
@@ -7,8 +21,8 @@ db = firestore.Client()
 users_ref = db.collection(u'carAds')
 docs = users_ref.get()
 
-for doc in docs:
-    print(u'{} => {}'.format(doc.id, doc.to_dict()))
+#for doc in docs:
+    #print(u'{} => {}'.format(doc.id, doc.to_dict()))
 
 # ad_data = []
 # with open("Advertisements.txt") as file_ads:
