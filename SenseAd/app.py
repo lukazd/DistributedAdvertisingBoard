@@ -1,4 +1,4 @@
-from flask import Flask, request, abort
+from flask import Flask, request, abort, jsonify
 from google.cloud import firestore
 application = Flask(__name__)
 
@@ -15,14 +15,13 @@ def getAdsForUser():
     if user_id is None:
         return abort(400)
 
-    docs = db.collection(u'ads').where(u'category', u'==', u'carAds').get().to_dict()
+    docs = db.collection(u'ads').where(u'category', u'==', u'carAds').get()
 
-    print(docs)
-    return docs
-
+    results = []
     for doc in docs:
-        print(u'{} => {}'.format(doc.id, doc.to_dict()))
+        results.append(doc.to_dict())
 
+    return jsonify(results)
     return "Welcome: " + user_id
 
 
