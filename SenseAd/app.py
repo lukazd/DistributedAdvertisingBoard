@@ -28,7 +28,7 @@ def getAdsForUser():
     return jsonify(result)
 
 @application.route("/rateAd", methods=['POST'])
-def getAdsForUser():
+def rateAd():
     data = request.form
     user_id = data["user_id"]
     rating = data["rating"]
