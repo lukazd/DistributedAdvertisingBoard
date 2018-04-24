@@ -17,12 +17,15 @@ def getAdsForUser():
 
     docs = db.collection(u'ads').where(u'category', u'==', u'carAds').get()
 
-    results = []
+    ads = []
     for doc in docs:
-        results.append(doc.to_dict())
+        ads.append(doc.to_dict())
 
-    return jsonify(results)
-    return "Welcome: " + user_id
+    person = db.collection(u'personInfo').document(user_id).get().to_dict()
+
+    result = {"person" : person, "ads" : ads}
+
+    return jsonify(result)
 
 
 if __name__ == "__main__":
