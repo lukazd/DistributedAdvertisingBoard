@@ -1,5 +1,8 @@
 from flask import Flask, request, abort
+from google.cloud import firestore
 application = Flask(__name__)
+
+db = firestore.Client()
 
 @application.route("/")
 def hello():
