@@ -12,6 +12,13 @@ def getAdsForUser():
     if user_id is None:
         return abort(400)
 
+    docs = db.collection(u'ads').where(u'category', u'==', u'carAds').get()
+
+    return docs
+
+    for doc in docs:
+        print(u'{} => {}'.format(doc.id, doc.to_dict()))
+
     return "Welcome: " + user_id
 
 
