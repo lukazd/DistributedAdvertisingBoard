@@ -27,6 +27,19 @@ def getAdsForUser():
 
     return jsonify(result)
 
+@application.route("/rateAd", methods=['POST'])
+def getAdsForUser():
+    data = request.form
+    user_id = data["user_id"]
+    rating = data["rating"]
+    ad_id = data["ad_id"]
+
+    print(user_id)
+    print(rating)
+    print(ad_id)
+
+    return "Thanks for submitting rating"
+
 
 if __name__ == "__main__":
     application.run(host='0.0.0.0', debug=True)
