@@ -17,6 +17,7 @@ def getAdsForUser():
 
     docs = db.collection(u'ads').where(u'category', u'==', u'carAds').get()
 
+    print(docs)
     return docs
 
     for doc in docs:
