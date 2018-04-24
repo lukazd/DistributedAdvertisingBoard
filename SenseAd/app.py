@@ -15,7 +15,7 @@ def getAdsForUser():
     if user_id is None:
         return abort(400)
 
-    docs = db.collection(u'ads').where(u'category', u'==', u'carAds').get()
+    docs = db.collection(u'ads').where(u'category', u'==', u'carAds').get().to_dict()
 
     print(docs)
     return docs
