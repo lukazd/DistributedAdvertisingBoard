@@ -19,7 +19,7 @@ def getAdsForUser():
 
     ads = []
     for doc in docs:
-        ads.append(doc.to_dict())
+        ads.append({"ad_id" : doc.id, "ad" : doc.to_dict()})
 
     person = db.collection(u'personInfo').document(user_id).get().to_dict()
 
@@ -34,9 +34,8 @@ def rateAd():
     rating = data["rating"]
     ad_id = data["ad_id"]
 
-    print(user_id)
-    print(rating)
-    print(ad_id)
+    if user_id is None or ad_id is None or rating is None:
+        return abort(400)
 
     return "Thanks for submitting rating"
 
