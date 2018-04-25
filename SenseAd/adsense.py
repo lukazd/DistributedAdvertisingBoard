@@ -2,12 +2,39 @@ from adsense_classes import Advertisement, Sensors, User
 from google.cloud import firestore
 from sklearn.datasets import load_iris
 from sklearn.ensemble import RandomForestClassifier
+from surprise import SVD
+from surprise import Dataset
 import pandas as pd
 import numpy as np
 
+
+
+def get_top_n(predictions, uuid, n=10):
+    top_n = defaultdict(list)
+    for iid, true_r, est, _ in predictions:
+        top_n[uuid].append((iid,est))
+
+    for user_ratings in top_n.items():
+        user_ratings.sort(key=lambda x: x[1], reverse=True)
+        top_n[uid] = user_ratings[:n]
+
+    return top_n
+
+data = Dataset.load_builtin('ml-100k')
+
+algo = SVD()
+
+trainset = data.build_full_trainset()
+
+algo.fit(trainset)
+
+pred = algo.predict(2,2,4,True)
+
+print(pred)
+
+
+##sklearn example below
 np.random.seed(0)
-
-
 iris = load_iris()
 df = pd.DataFrame(iris.data, columns=iris.feature_names)
 print(df.head())
