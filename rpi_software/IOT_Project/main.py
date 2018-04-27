@@ -59,7 +59,7 @@ img_path = os.path.join(os.path.curdir, 'environment_image.png')
 global back_end_url
 global my_json
 back_end_url = "http://sensead.westcentralus.cloudapp.azure.com:8000/getAdsForUser?user_id="
-back_end_url = "http://sensead.westcentralus.cloudapp.azure.com:8000/getAdsForUser?user_id=11bc97c4-657c-43bd-9852-8a95b192b0be"
+#back_end_url = "http://sensead.westcentralus.cloudapp.azure.com:8000/getAdsForUser?user_id=11bc97c4-657c-43bd-9852-8a95b192b0be"
 ################### Initialize global variables ##############################
 wait = 3    # set rate (in seconds) for acquiring frames from camera
 QUIT = True # boolean for terminating camera (maybe app)
