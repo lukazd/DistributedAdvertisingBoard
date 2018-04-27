@@ -55,7 +55,7 @@ BASE_URL = 'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/'  # Rep
 CF.BaseUrl.set(BASE_URL)
 
 # Initialize name of image to save
-img_path = 'environment_image.png'
+img_path = os.path.join(os.path.curdir, 'environment_image.png')
 global back_end_url
 global my_json
 back_end_url = "http://sensead.westcentralus.cloudapp.azure.com:8000/getAdsForUser?user_id="
@@ -158,7 +158,7 @@ class ScreenOne(Screen):
     # Function for setting up the help button pop-up.
     ####################################################################
     @mainthread
-    def user_found(self):
+    def user_found(self, face):
         #self.acquire_thread()
         global my_json, counter
         counter = 0
