@@ -47,10 +47,8 @@ import cognitive_face as CF
 # Initialize the group name to save
 global mcg_group_name
 mcg_group_name = "large-person-group-dev"
-# Read subscription key from text file and set
-file = open('keys.txt', 'r')
-print(file.readline())
-KEY = file.readline()
+# Read subscription key from environment variable
+KEY = os.environ['COG_KEY']
 CF.Key.set(KEY)
 # Set the base url to use (i.e. central USA)
 BASE_URL = 'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/'  # Replace with your regional Base URL
