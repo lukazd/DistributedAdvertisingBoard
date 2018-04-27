@@ -88,14 +88,14 @@ class ScreenOne(Screen):
         #main_thread.start()
         #main_thread.join()
         self.set_init_widgets()
-        contents = requests.get(back_end_url)
-        global my_json
-        my_json = contents.json()
-        QUIT = False
-        self.user_found()
+        #contents = requests.get(back_end_url)
+        #global my_json
+        #my_json = contents.json()
+        #QUIT = False
+        #self.user_found()
         # Start a separate thread for user recognition
-        #camera_thread = threading.Thread(target=self.acquireImage)
-        #camera_thread.start()
+        camera_thread = threading.Thread(target=self.acquireImage)
+        camera_thread.start()
 
     #######################################################
     # Function for converting width height to a point in
@@ -165,11 +165,11 @@ class ScreenOne(Screen):
         userName = my_json["person"]["personName"]
         self.ids.user_label.color = 0, 1, 0, 1
         self.ids.user_label.text = "Hello, " + userName + '.'
-        #img = Image.open(img_path)
-        #img2 = img.crop((self.getRectangle(face)[0][0] - 40, self.getRectangle(face)[0][1] - 75,
-        #                 self.getRectangle(face)[1][0] + 40, self.getRectangle(face)[1][1] + 30))
-        #img2.save("temp_img2.png")
-        #self.ids.user_image.source = ""
+        img = Image.open(img_path)
+        img2 = img.crop((self.getRectangle(face)[0][0] - 40, self.getRectangle(face)[0][1] - 75,
+                         self.getRectangle(face)[1][0] + 40, self.getRectangle(face)[1][1] + 30))
+        img2.save("temp_img2.png")
+        self.ids.user_image.source = ""
         self.ids.user_image.source = "temp_img2.png"
         #self.ids.user_image.source = ""
         self.ids.center_image.source = my_json["ads"][counter]["ad"]["url"]
