@@ -56,7 +56,7 @@ BASE_URL = 'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/'  # Rep
 CF.BaseUrl.set(BASE_URL)
 
 # Initialize name of image to save
-img_path = os.path.join(os.path.curdir, 'environment_image.png')
+#img_path = os.path.join(os.path.curdir, 'environment_image.png')
 global back_end_url
 global my_json
 back_end_url = "http://sensead.westcentralus.cloudapp.azure.com:8000/getAdsForUser?user_id="
@@ -185,12 +185,12 @@ class ScreenOne(Screen):
         userName = my_json["person"]["personName"]
         self.ids.user_label.color = 0, 1, 0, 1
         self.ids.user_label.text = "Hello, " + userName + '.'
-        img = Image.open(img_path)
-        img2 = img.crop((self.getRectangle(face)[0][0] - 40, self.getRectangle(face)[0][1] - 75,
-                         self.getRectangle(face)[1][0] + 40, self.getRectangle(face)[1][1] + 30))
-        img2.save("temp_img2.png")
+        #img = Image.open(img_path)
+        #img2 = img.crop((self.getRectangle(face)[0][0] - 40, self.getRectangle(face)[0][1] - 75,
+        #                 self.getRectangle(face)[1][0] + 40, self.getRectangle(face)[1][1] + 30))
+        #img2.save("temp_img2.png")
         #self.ids.user_image.source = ""
-        self.ids.user_image.source = "temp_img2.png"
+        #self.ids.user_image.source = "temp_img2.png"
         self.ids.user_image.texture = face_image.texture()
         #self.ids.user_image.reload()
         #self.ids.user_image.source = ""
@@ -410,7 +410,7 @@ class ScreenOne(Screen):
         global timer_stop, QUIT
         timer_stop = False
         self.ids.timer_label.text = ""
-        self.resize_screen()
+        #self.resize_screen()
         QUIT = True
 
 #############################################################
