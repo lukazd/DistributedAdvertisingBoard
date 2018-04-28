@@ -1,26 +1,18 @@
-# Import Libraries
 import json
 import os
 import requests
-import numpy as np
-from PIL import Image, ImageDraw
 import urllib
 import urllib3
-urllib3.disable_warnings()
-# Import library for implementing delays
 import time
-# Import library for multi-threading
 import threading
-
-# Import various kivy libraries
+import cv2
 import kivy
-kivy.require('1.10.0')
+
+import cognitive_face as CF
+import numpy as np
+
 from kivy.app import App
 from kivy.cache import Cache
-#Cache._categories['kv.image']['limit'] = 1
-#Cache._categories['kv.image']['timeout'] = 1
-#Cache._categories['kv.texture']['limit'] = 1
-#Cache._categories['kv.texture']['timeout'] = 1
 from kivy.clock import Clock, mainthread
 from kivy.graphics import *
 from kivy.uix.boxlayout import BoxLayout
@@ -33,34 +25,24 @@ from kivy.uix.image import AsyncImage
 from kivy.core.window import Window
 from kivy.config import Config
 from kivy.graphics.texture import Texture
-#from kivy.loader import Loader
-#from kivy.core.image import ImageLoader
-#from kivy.uix.image import Image
+from PIL import Image, ImageDraw
+from functools import partial
+
+urllib3.disable_warnings()
+kivy.require('1.10.0')
 Config.set('graphics', 'fullscreen', 1)
-# Import camera object for python
-import cv2
-# Specify the camera to use, 0 = built-in
+
 
 ######################### Microsoft Cognitive ###############################
-#### Import cognitive library ####
-import cognitive_face as CF
-# Initialize the group name to save
 global mcg_group_name
 mcg_group_name = "large-person-group-dev"
-# Read subscription key from environment variable
 KEY = os.environ['COG_KEY']
 CF.Key.set(KEY)
-# Set the base url to use (i.e. central USA)
 BASE_URL = 'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/'  # Replace with your regional Base URL
 CF.BaseUrl.set(BASE_URL)
 
-# Initialize name of image to save
 #img_path = os.path.join(os.path.curdir, 'environment_image.png')
-global sensead_endpoint
-global my_json
 ################### Initialize global variables ##############################
-wait = 3    # set rate (in seconds) for acquiring frames from camera
-QUIT = True # boolean for terminating camera (maybe app)
 
 class SenseAdEndpoint():
     URL = "http://sensead.westcentralus.cloudapp.azure.com:8000"
@@ -80,48 +62,25 @@ class CapturedFrame():
         image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
         return image_texture
 
-##################################################
-# Class which runs the functional GUI application.
-##################################################
 class ScreenOne(Screen):
 
-    ##########################################################
-    # This function runs when the class object is initialized
-    # and ran (not 100% sure).
-    ##########################################################
     def __init__(self, **kwargs):
         super(ScreenOne, self).__init__(**kwargs)
         self.camera_thread = threading.Thread(target=self.acquireImage)
+        self.wait = 3
+        self.quit = True
+        self.response_json = None
+        self.ad_counter = 0
+        self.timer_stop = 0
 
     def spawn_camera_thread(self):
         self.camera_thread = threading.Thread(target=self.acquireImage)
         self.camera_thread.start()
 
-    ##############################################################
-    # This is an event that is fired when the screen is displayed.
-    ##############################################################
     def on_enter(self, *args):
-        # Initialize a lock object -> haven't found reason to use
-        # but its here in case :D
-        global lock
-        lock = threading.Lock()
-        # Start a separate thread for GUI
-        #main_thread = threading.Thread(target=self.set_init_widgets)
-        #main_thread.start()
-        #main_thread.join()
         self.set_init_widgets()
-        #contents = requests.get(sensead_endpoint)
-        #global my_json
-        #my_json = contents.json()
-        #QUIT = False
-        #self.user_found()
-        # Start a separate thread for user recognition
         self.spawn_camera_thread()
 
-    #######################################################
-    # Function for converting width height to a point in
-    # a rectangle. Used to outline user's face on screen.
-    #######################################################
     def getRectangle(self, faceDictionary):
         rect = faceDictionary['faceRectangle']
         left = rect['left']
@@ -130,21 +89,15 @@ class ScreenOne(Screen):
         right = top + rect['width']
         return ((left, top), (bottom, right))
 
-    #######################################################
-    # Function for acquiring images/frames from environment
-    #######################################################
     def acquireImage(self):
         # State global variables
-        global QUIT, wait
         cap = cv2.VideoCapture(0)
 
         while True:
             # Code for waiting after frame (integer value to milli-seconds)
-            time.sleep(wait)
+            time.sleep(self.wait)
 
-            # Check if a user is currently using the app
-            # Capture frame-by-frame
-            if QUIT == True:
+            if self.quit == True:
                 ret, frame = cap.read()
 
             # Check if frame was successfully acquired
@@ -158,25 +111,16 @@ class ScreenOne(Screen):
                     if len(identities) > 0:
                         ad_request_url = SenseAdEndpoint.URL + SenseAdEndpoint.GET_ADS_PATH + identities[0]['personId']
                         contents = requests.get(ad_request_url)
-                        global my_json
-                        my_json = contents.json()
-                        QUIT = False
+                        self.response_json = contents.json()
+                        self.quit = False
                         self.user_found(face, face_image)
                         cap.release()
                         return
-                        break  # Quit for-loop
 
-            ret = False
-
-    ####################################################################
-    # Function for setting up the help button pop-up.
-    ####################################################################
     @mainthread
     def user_found(self, face, face_image):
-        #self.acquire_thread()
-        global my_json, counter
-        counter = 0
-        userName = my_json["person"]["personName"]
+        self.ad_counter = 0
+        userName = self.response_json["person"]["personName"]
         self.ids.user_label.color = 0, 1, 0, 1
         self.ids.user_label.text = "Hello, " + userName + '.'
         #img = Image.open(img_path)
@@ -188,57 +132,37 @@ class ScreenOne(Screen):
         self.ids.user_image.texture = face_image.texture()
         #self.ids.user_image.reload()
         #self.ids.user_image.source = ""
-        self.ids.center_image.source = my_json["ads"][counter]["ad"]["url"]
-        self.changeTexts()
+        self.ids.center_image.source = self.response_json["ads"][self.ad_counter]["ad"]["url"]
+        self.change_texts()
 
-    ####################################################################
-    # Function for getting an advertisement
-    ####################################################################
-    # def get_ad_url(self):
-    #     global my_json, counter
-    #     temp_img = Image.open(requests.get(my_json["ads"][counter]["ad"]["url"], stream=True).raw)
-    #     temp_img.save("temp_ad.png")
-    #     #temp_img = Loader.image(requests.get(my_json["ads"][counter]["ad"]["url"], stream=True).raw)
-    #     #temp_img.bind(on_load=self._image_loaded)
-    #     counter = counter + 1
-    #     return "temp_ad.png"
-
-    ####################################################################
-    # Function for setting up the help button pop-up.
-    ####################################################################
     @mainthread
     def help_popup(self):
-        text1 = 'This is the SenseAd Kiosk. If you have registered through the app then the kiosk'
-        text2 = ' will be able to identify you. \nWhen prompted, select a category of ads to view.'
-        text3 = ' A timer will be on to indicate if you have viewed the ad for enough time (~10 seconds).\n'
-        button_text = 'Press to close me!'
-        fulltext = text1 + text2 + text3 + button_text
-        content = BoxLayout()
-        popup_help = Popup(title='Help Page', content=content, auto_dismiss=False, size_hint=[0.7, 0.7])
-        # Instantiate a button object to add to the popup
-        button = Button(
-            text=fulltext,
-            background_normal='',
-            background_color=[0, 0, 0, 1],
-            on_release=popup_help.dismiss,
-            on_press=lambda *args: self.resize_screen()
+        #TODO: Fix this string
+        help_text = (
+            'This is the SenseAd Kiosk. If you have registered through the app then the kiosk '
+            'will be able to identify you. \nWhen prompted, select a category of ads to view. '
+            'A timer will be on to indicate if you have viewed the ad for enough time (~10 seconds).\n'
         )
-        # Add button widget to set layout
-        content.add_widget(button)
+        button_text = 'Press to close me!'
+        content = BoxLayout()
+        popup_help = Popup(title='Help Page', content=content, auto_dismiss=True, size_hint=[0.7, 0.7])
+
+        label = Label(
+            text=help_text,
+            background_normal='',
+            background_color=[0, 0, 0, 1]
+        )
+
+        content.add_widget(label)
         popup_help.open()
 
-    ####################################################################
-    # Use this function for changing the text parameters when a user has
-    # been found via function acquireImage.
-    ####################################################################
     @mainthread
-    def changeTexts(self):
-        # Disable buttons at start
+    def change_texts(self):
         self.ids.like_button.disabled = True
         self.ids.dislike_button.disabled = True
         self.ids.neutral_button.disabled = True
         self.ids.quit_button.disabled = False
-        # Set attributes of GUI widgets to use when user is found
+
         self.ids.quit_button.text = "Log Out"
         self.ids.quit_button.color = 1, 1, 1, 1
         self.ids.timer_label.text = "0s"
@@ -248,42 +172,28 @@ class ScreenOne(Screen):
         self.ids.dislike_button.color = 1, 0, 0, 0.5
         self.ids.neutral_button.text = "Neutral"
         self.ids.neutral_button.color = 0, 0.75, 1, 0.5
-        time.sleep(0.5)
-        # self.resize_screen()
-        global timer_stop
-        timer_stop=True
-        self.enable_pref_buttons()
-        #Clock.schedule_once(lambda dt: self.timer_label_count(0), 1)
 
-    ###############################################################
-    # Use this function for initializing the initial color, format,
-    # and functionality of the GUI widgets
-    ###############################################################
+        time.sleep(0.5)
+        self.timer_stop=True
+        self.disable_pref_buttons()
+        self.start_ad_timer(None)
+
     @mainthread
     def set_init_widgets(self):
-        # Set timer_stop to false
-        global timer_stop
-        timer_stop=False
-        # Initialize timer label to blank
+        self.timer_stop=False
         self.ids.timer_label.text = ""
-        # Bind buttons on GUI to specific functions
+
         self.ids.help_button.bind(on_release=lambda *args: self.help_popup())
         self.ids.like_button.bind(on_press=lambda *ads: self.pref_ads('Like'))
         self.ids.dislike_button.bind(on_press=lambda *ads: self.pref_ads('Dislike'))
         self.ids.neutral_button.bind(on_press=lambda *ads: self.pref_ads('Neutral'))
         self.ids.quit_button.bind(on_press=lambda *args: self.quit_main())
-        # Disable category, go left, go right, and quit buttons at start
+
         self.ids.like_button.disabled = True
         self.ids.dislike_button.disabled = True
         self.ids.neutral_button.disabled = True
         self.ids.quit_button.disabled = True
-        # Resize screen to max
-        #time.sleep(0.5)
-        #self.resize_screen()
 
-    ####################################################################
-    # Function for enabling the ad preference buttons.
-    ####################################################################
     @mainthread
     def enable_pref_buttons(self):
         self.ids.like_button.disabled = False
@@ -293,9 +203,6 @@ class ScreenOne(Screen):
         self.ids.neutral_button.disabled = False
         self.ids.neutral_button.color = 0, 0.75, 1, 1
 
-    ####################################################################
-    # Function for enabling the ad preference buttons.
-    ####################################################################
     @mainthread
     def disable_pref_buttons(self):
         self.ids.like_button.disabled = True
@@ -305,93 +212,68 @@ class ScreenOne(Screen):
         self.ids.neutral_button.disabled = True
         self.ids.neutral_button.color = 0, 0.75, 1, 0.5
 
-    ####################################################################
-    # Function for controlling the timer label text. Should change per
-    # ad.
-    ####################################################################
     @mainthread
-    def timer_label_count(self, num):
-        global timer_stop
-        if timer_stop == True:
-            # ADD A CHECK HERE IF EQUAL TO 5 (OR OTHER VALUE)
-            if num == 10:
+    def timer_label_count(self, num, *args):
+        if self.timer_stop == True:
+            if num == 0:
                 self.ids.timer_label.color = 1, 0, 0, 1
                 self.ids.timer_label.text = str(num)+'s'
                 self.enable_pref_buttons()
-                return
-            num += 1
+
             self.ids.timer_label.color = 1, 1, 1, 1
             self.ids.timer_label.text = str(num)+'s'
             self.ids.timer_label.color = 0, 1, 0, 1
-            #Clock.schedule_once(lambda dt: self.timer_label_count(num), 1)
 
-    ###################################################################
-    # Function for resizing the screen. Gets rid of graphic problems
-    ###################################################################
     @mainthread
     def resize_screen(self):
         Window.fullscreen = 'auto'
 
-    ###################################################################
-    # Function for implementing an action for whenever the user
-    # presses either of the like buttons.
-    ###################################################################
     @mainthread
     def pref_ads(self, opin_ad):
+        #  Call self.popup_iota()
+        self.popup_iota()
+
+        # TODO:
         # Handle like button here - pass to IOTA
         # Pay customer in IOTA
 
-        #  Call self.popup_iota()
-        #self.popup_iota()
 
-        # Disable buttons
-        #self.disable_pref_buttons()
-        global my_json, counter
-        counter = counter + 1
-        # Check if there are still ads
-        if len(my_json["ads"][counter]["ad"]["url"]) != 0:
-            # Set new image
-            #self.ids.center_image.source = 'background.jpg'
-            #time.sleep(0.5)
-            #self.ids.center_image.source = ''
-            #self.ids.center_image.reload()
-            self.ids.center_image.source = my_json["ads"][counter]["ad"]["url"]
+        self.disable_pref_buttons()
+        self.ad_counter += 1
+
+        # TODO: make sure this check for ads is correct
+        if len(self.response_json["ads"][self.ad_counter]["ad"]["url"]) != 0:
+            self.ids.center_image.source = self.response_json["ads"][self.ad_counter]["ad"]["url"]
             self.ids.center_image.reload()
-            #self.ids.center_image.reload()
-        # Reset timer
+
+
+    def start_ad_timer(self, args):
         self.ids.timer_label.color = 0, 1, 0, 1
         time.sleep(0.5)
-        Clock.schedule_once(lambda dt: self.timer_label_count(0), 1)
 
-    #############################################################
-    # Functions for calling and dismissing a popup to inform the
-    # user that their IOTA transfer.
-    #############################################################
+        for i in range(10, -1, -1):
+            Clock.schedule_once(partial(self.timer_label_count, i), 10-i)
+
     @mainthread
     def popup_iota(self):
-        content = Button(text='IOTA Transaction Initiated.')
-        popup = Popup(title='IOTA Payment', content=content, auto_dismiss=False,
+        content = Label(text='IOTA Transaction Initiated.')
+        popup = Popup(title='IOTA Payment', content=content, auto_dismiss=True,
                       size_hint=(None, None), size=(300, 100))
-        # bind the on_press event of the button to the dismiss function
         content.bind(on_release=popup.dismiss)
+        popup.bind(on_dismiss=self.start_ad_timer)
         popup.open()
 
-    #############################################################
-    # Function for when the user presses the QUIT button.
-    #############################################################
     @mainthread
     def quit_main(self):
-        # Change center image
         self.ids.center_image.source = 'background.jpg'
         self.ids.user_image.source = 'background.jpg'
         self.ids.user_image.reload()
-        #self.ids.user_image.texture = None
-        # Disable buttons at start
+
         self.ids.like_button.disabled = True
         self.ids.dislike_button.disabled = True
         self.ids.neutral_button.disabled = True
         self.ids.quit_button.disabled = True
-        # Set attributes of GUI widgets to use when user is found
+
         self.ids.quit_button.text = ""
         self.ids.quit_button.color = 0, 0, 0, 1
         self.ids.like_button.text = ""
@@ -403,39 +285,25 @@ class ScreenOne(Screen):
         self.ids.timer_label.text = "    "
         self.ids.user_label.color = 1, 0, 0, 1
         self.ids.user_label.text = "Finding user..."
-        global timer_stop, QUIT
-        timer_stop = False
+
+        self.timer_stop = False
         self.ids.timer_label.text = ""
-        #self.resize_screen()
-        QUIT = True
+        self.quit = True
         self.spawn_camera_thread()
 
-#############################################################
-# This class is for instantiating an initial screen to use.
-# Intended to be used when the GUI was going to be multiple
-# screens versus the current 1 screen.
-#############################################################
 class Manager(ScreenManager):
     stop = threading.Event()
     screen_one = ObjectProperty(None)
 
-#############################################################
-# Separate class for running the Kivy GUI.
-#############################################################
 class ScreensApp(App):
-    # NOT REALLY IMPLEMENTED... YET.
     def on_stop(self):
-        # The Kivy event loop is about to stop, set a stop signal;
-        #  otherwise the app window will close, but the Python process will
-        # keep running until all secondary threads exit.
         #self.root.stop.set()
         print("exited")
+
     # Start the program
     def build(self):
         m = Manager(transition=NoTransition())
         return m
-        return ScreenOne()
 
-# Runs program -> NOT PART OF ANY CLASS!
 if __name__ == "__main__":
     ScreensApp().run()
