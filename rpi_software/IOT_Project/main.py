@@ -32,6 +32,7 @@ from kivy.properties import ObjectProperty
 from kivy.uix.image import AsyncImage
 from kivy.core.window import Window
 from kivy.config import Config
+from kivy.graphics.texture import Texture
 #from kivy.loader import Loader
 #from kivy.core.image import ImageLoader
 #from kivy.uix.image import Image
@@ -63,6 +64,20 @@ back_end_url = "http://sensead.westcentralus.cloudapp.azure.com:8000/getAdsForUs
 ################### Initialize global variables ##############################
 wait = 3    # set rate (in seconds) for acquiring frames from camera
 QUIT = True # boolean for terminating camera (maybe app)
+
+class CapturedFrame():
+    def __init__(self, frame):
+        self.frame = frame
+
+    def read(self):
+        png_image = cv2.imencode('.png', self.frame)[1]
+        return bytearray(png_image.tostring())
+
+    def texture(self):
+        buf = cv2.flip(self.frame, 0).tostring()
+        image_texture = Texture.create(size=(self.frame.shape[1], self.frame.shape[0]), colorfmt='bgr')
+        image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
+        return image_texture
 
 ##################################################
 # Class which runs the functional GUI application.
@@ -130,10 +145,15 @@ class ScreenOne(Screen):
                 # Our operations on the frame come here
                 color_obj = cv2.cvtColor(frame, cv2.COLORMAP_BONE)
                 # Write the frame into the file newImage.jpg
-                cv2.imwrite(img_path, color_obj)
+                #cv2.imwrite(img_path, color_obj)
+
+                face_image = CapturedFrame(frame)
+# convert it to texture
+                # display image from the texture
+
                 #im = Image.open(img_path)
                 #im.show()
-                faces = CF.face.detect(img_path)
+                faces = CF.face.detect(face_image)
                 ii = 0
                 for face in faces:
                     # Get ID of face and check within large database to check for user
@@ -147,7 +167,7 @@ class ScreenOne(Screen):
                         global my_json
                         my_json = contents.json()
                         QUIT = False
-                        self.user_found(face)
+                        self.user_found(face, face_image)
                         break  # Quit for-loop
                     else:
                         # Iterate to next user if not found
@@ -158,7 +178,7 @@ class ScreenOne(Screen):
     # Function for setting up the help button pop-up.
     ####################################################################
     @mainthread
-    def user_found(self, face):
+    def user_found(self, face, face_image):
         #self.acquire_thread()
         global my_json, counter
         counter = 0
@@ -169,8 +189,10 @@ class ScreenOne(Screen):
         img2 = img.crop((self.getRectangle(face)[0][0] - 40, self.getRectangle(face)[0][1] - 75,
                          self.getRectangle(face)[1][0] + 40, self.getRectangle(face)[1][1] + 30))
         img2.save("temp_img2.png")
-        self.ids.user_image.source = ""
+        #self.ids.user_image.source = ""
         self.ids.user_image.source = "temp_img2.png"
+        self.ids.user_image.texture = face_image.texture()
+        #self.ids.user_image.reload()
         #self.ids.user_image.source = ""
         self.ids.center_image.source = my_json["ads"][counter]["ad"]["url"]
         self.changeTexts()
@@ -367,7 +389,7 @@ class ScreenOne(Screen):
     def quit_main(self):
         # Change center image
         self.ids.center_image.source = 'background.jpg'
-        self.ids.user_image.source = 'background.jpg'
+        #self.ids.user_image.source = 'background.jpg'
         # Disable buttons at start
         self.ids.like_button.disabled = True
         self.ids.dislike_button.disabled = True
@@ -385,7 +407,7 @@ class ScreenOne(Screen):
         self.ids.timer_label.text = "    "
         self.ids.user_label.color = 1, 0, 0, 1
         self.ids.user_label.text = "Finding user..."
-        global timer_stop
+        global timer_stop, QUIT
         timer_stop = False
         self.ids.timer_label.text = ""
         self.resize_screen()
@@ -409,11 +431,13 @@ class ScreensApp(App):
         # The Kivy event loop is about to stop, set a stop signal;
         #  otherwise the app window will close, but the Python process will
         # keep running until all secondary threads exit.
-        self.root.stop.set()
+        #self.root.stop.set()
+        print("exited")
     # Start the program
     def build(self):
         m = Manager(transition=NoTransition())
         return m
+        return ScreenOne()
 
 # Runs program -> NOT PART OF ANY CLASS!
 if __name__ == "__main__":

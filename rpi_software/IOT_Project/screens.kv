@@ -30,15 +30,16 @@
                 background_color: 0, 0, 0, 1
                 size_hint_x: 0.6
 
-            AsyncImage:
+            Image:
                 id: user_image
+                source: "background.jpg"
+                texture: 
                 pos: self.pos
                 center: self.parent.center
                 background_normal: ''
                 background_color: 0,0,0,1
                 allow_stretch: True
                 keep_ratio: True
-                source: 'background.jpg'
                 size_hint_x: 0.2
 
         BoxLayout:
@@ -62,7 +63,7 @@
 
             Button:
                 id: like_button
-                size_hint_x: 1/3
+                size_hint_x: 1.0/3.0
                 font_weight: "Bold"
                 font_size: 40
                 background_normal: ''
@@ -71,7 +72,7 @@
 
             Button:
                 id: neutral_button
-                size_hint_x: 1/3
+                size_hint_x: 1.0/3.0
                 font_weight: "Bold"
                 font_size: 40
                 background_normal: ''
@@ -80,7 +81,7 @@
 
             Button:
                 id: dislike_button
-                size_hint_x: 1/3
+                size_hint_x: 1.0/3.0
                 font_weight: "Bold"
                 font_size: 40
                 background_normal: ''
