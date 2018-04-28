@@ -1,6 +1,5 @@
 import os
 import re
-import node_ip
 
 from iota import Iota, ProposedTransaction, ProposedBundle, Address, Tag, TryteString
 from iota.adapter import HttpAdapter
@@ -36,4 +35,4 @@ def is_address_spent(address):
 def is_address_valid(address):
     return re.search("[9A-Z]{81}", address) is not None
 
-create_and_send_transactions('VEYONVNFFAQPKYMMOJZJ9JLQNBVGQMMLSDNTWZQYCYYNNJIBOKJHHGCIKKNEVEAXQO9MJXEQLFPQCIEAW', 164, 'The number of the beast')
+#create_and_send_transactions('VEYONVNFFAQPKYMMOJZJ9JLQNBVGQMMLSDNTWZQYCYYNNJIBOKJHHGCIKKNEVEAXQO9MJXEQLFPQCIEAW', 164, 'The number of the beast')

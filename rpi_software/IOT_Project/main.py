@@ -1,8 +1,7 @@
 import json
-import os
+import sys, os
 import requests
-import urllib
-import urllib3
+import urllib, urllib3
 import time
 import threading
 import cv2
@@ -28,9 +27,12 @@ from kivy.graphics.texture import Texture
 from PIL import Image, ImageDraw
 from functools import partial
 
+sys.path.append(os.path.join(os.path.dirname(sys.path[0]), '../..', 'DistributedAdvertisingBoard/iota'))
+import iota_payments
+
 urllib3.disable_warnings()
 kivy.require('1.10.0')
-Config.set('graphics', 'fullscreen', 1)
+Config.set('graphics', 'window_state', 'maximized')
 
 
 ######################### Microsoft Cognitive ###############################
@@ -47,6 +49,7 @@ CF.BaseUrl.set(BASE_URL)
 class SenseAdEndpoint():
     URL = "http://sensead.westcentralus.cloudapp.azure.com:8000"
     GET_ADS_PATH = "/getAdsForUser?user_id="
+    RATE_AD_PATH = "/rateAd"
 
 class CapturedFrame():
     def __init__(self, frame):
@@ -54,7 +57,7 @@ class CapturedFrame():
 
     def read(self):
         png_image = cv2.imencode('.png', self.frame)[1]
-        return bytearray(png_image.tostring())
+        return bytes(bytearray(png_image.tostring()))
 
     def texture(self):
         buf = cv2.flip(self.frame, 0).tostring()
@@ -75,6 +78,7 @@ class ScreenOne(Screen):
 
     def spawn_camera_thread(self):
         self.camera_thread = threading.Thread(target=self.acquireImage)
+        self.camera_thread.setDaemon(True)
         self.camera_thread.start()
 
     def on_enter(self, *args):
@@ -140,7 +144,7 @@ class ScreenOne(Screen):
         #TODO: Fix this string
         help_text = (
             'This is the SenseAd Kiosk. If you have registered through the app then the kiosk '
-            'will be able to identify you. \nWhen prompted, select a category of ads to view. '
+            'will be able to identify you. When prompted, select a category of ads to view. '
             'A timer will be on to indicate if you have viewed the ad for enough time (~10 seconds).\n'
         )
         button_text = 'Press to close me!'
@@ -230,21 +234,26 @@ class ScreenOne(Screen):
 
     @mainthread
     def pref_ads(self, opin_ad):
-        #  Call self.popup_iota()
+        #TODO: save some of this info in instance variables
+        r = requests.post(SenseAdEndpoint.URL + SenseAdEndpoint.RATE_AD_PATH, data={'user_id' : self.response_json["person"]["personId"], 'ad_id' : self.response_json["ads"][self.ad_counter]['ad_id'], 'rating': opin_ad})
+        print(r.content)
+
         self.popup_iota()
 
-        # TODO:
-        # Handle like button here - pass to IOTA
-        # Pay customer in IOTA
-
+        #TODO: save some of this info in instance variables
+        iota_payment_thread = threading.Thread(target=iota_payments.create_and_send_transactions, args=(self.response_json["person"]["iotaCode"], 1, 'SenseAd Payment'))
+        iota_payment_thread.setDaemon(True)
+        iota_payment_thread.start()
 
         self.disable_pref_buttons()
         self.ad_counter += 1
 
         # TODO: make sure this check for ads is correct
-        if len(self.response_json["ads"][self.ad_counter]["ad"]["url"]) != 0:
+        if len(self.response_json["ads"].get(self.ad_counter) != None):
             self.ids.center_image.source = self.response_json["ads"][self.ad_counter]["ad"]["url"]
             self.ids.center_image.reload()
+        else:
+            # TODO: make a popup saying the ads are done
 
 
     def start_ad_timer(self, args):
