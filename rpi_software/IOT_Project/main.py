@@ -40,7 +40,6 @@ Config.set('graphics', 'fullscreen', 1)
 # Import camera object for python
 import cv2
 # Specify the camera to use, 0 = built-in
-cap = cv2.VideoCapture(0)
 
 ######################### Microsoft Cognitive ###############################
 #### Import cognitive library ####
@@ -57,13 +56,15 @@ CF.BaseUrl.set(BASE_URL)
 
 # Initialize name of image to save
 #img_path = os.path.join(os.path.curdir, 'environment_image.png')
-global back_end_url
+global sensead_endpoint
 global my_json
-back_end_url = "http://sensead.westcentralus.cloudapp.azure.com:8000/getAdsForUser?user_id="
-#back_end_url = "http://sensead.westcentralus.cloudapp.azure.com:8000/getAdsForUser?user_id=11bc97c4-657c-43bd-9852-8a95b192b0be"
 ################### Initialize global variables ##############################
 wait = 3    # set rate (in seconds) for acquiring frames from camera
 QUIT = True # boolean for terminating camera (maybe app)
+
+class SenseAdEndpoint():
+    URL = "http://sensead.westcentralus.cloudapp.azure.com:8000"
+    GET_ADS_PATH = "/getAdsForUser?user_id="
 
 class CapturedFrame():
     def __init__(self, frame):
@@ -83,12 +84,18 @@ class CapturedFrame():
 # Class which runs the functional GUI application.
 ##################################################
 class ScreenOne(Screen):
+
     ##########################################################
     # This function runs when the class object is initialized
     # and ran (not 100% sure).
     ##########################################################
     def __init__(self, **kwargs):
         super(ScreenOne, self).__init__(**kwargs)
+        self.camera_thread = threading.Thread(target=self.acquireImage)
+
+    def spawn_camera_thread(self):
+        self.camera_thread = threading.Thread(target=self.acquireImage)
+        self.camera_thread.start()
 
     ##############################################################
     # This is an event that is fired when the screen is displayed.
@@ -103,14 +110,13 @@ class ScreenOne(Screen):
         #main_thread.start()
         #main_thread.join()
         self.set_init_widgets()
-        #contents = requests.get(back_end_url)
+        #contents = requests.get(sensead_endpoint)
         #global my_json
         #my_json = contents.json()
         #QUIT = False
         #self.user_found()
         # Start a separate thread for user recognition
-        camera_thread = threading.Thread(target=self.acquireImage)
-        camera_thread.start()
+        self.spawn_camera_thread()
 
     #######################################################
     # Function for converting width height to a point in
@@ -130,6 +136,7 @@ class ScreenOne(Screen):
     def acquireImage(self):
         # State global variables
         global QUIT, wait
+        cap = cv2.VideoCapture(0)
 
         while True:
             # Code for waiting after frame (integer value to milli-seconds)
@@ -142,36 +149,23 @@ class ScreenOne(Screen):
 
             # Check if frame was successfully acquired
             if ret == True:
-                # Our operations on the frame come here
-                color_obj = cv2.cvtColor(frame, cv2.COLORMAP_BONE)
-                # Write the frame into the file newImage.jpg
-                #cv2.imwrite(img_path, color_obj)
-
                 face_image = CapturedFrame(frame)
-# convert it to texture
-                # display image from the texture
 
-                #im = Image.open(img_path)
-                #im.show()
                 faces = CF.face.detect(face_image)
-                ii = 0
                 for face in faces:
-                    # Get ID of face and check within large database to check for user
-                    faceID = faces[ii]['faceId']
-                    temp = CF.face.identify([faceID], large_person_group_id=mcg_group_name)
-                    # Get identity of user
-                    if len(temp[0]["candidates"]) != 0:
-                        # Get the personID of the identified user and start main application
-                        url_backend = back_end_url + temp[0]["candidates"][0]['personId']
-                        contents = requests.get(url_backend)
+                    identities = CF.face.identify([face['faceId']], large_person_group_id=mcg_group_name)[0]["candidates"]
+
+                    if len(identities) > 0:
+                        ad_request_url = SenseAdEndpoint.URL + SenseAdEndpoint.GET_ADS_PATH + identities[0]['personId']
+                        contents = requests.get(ad_request_url)
                         global my_json
                         my_json = contents.json()
                         QUIT = False
                         self.user_found(face, face_image)
+                        cap.release()
+                        return
                         break  # Quit for-loop
-                    else:
-                        # Iterate to next user if not found
-                        ii = ii + 1
+
             ret = False
 
     ####################################################################
@@ -245,7 +239,7 @@ class ScreenOne(Screen):
         self.ids.neutral_button.disabled = True
         self.ids.quit_button.disabled = False
         # Set attributes of GUI widgets to use when user is found
-        self.ids.quit_button.text = "QUIT APP"
+        self.ids.quit_button.text = "Log Out"
         self.ids.quit_button.color = 1, 1, 1, 1
         self.ids.timer_label.text = "0s"
         self.ids.like_button.text = "Like"
@@ -389,7 +383,9 @@ class ScreenOne(Screen):
     def quit_main(self):
         # Change center image
         self.ids.center_image.source = 'background.jpg'
-        #self.ids.user_image.source = 'background.jpg'
+        self.ids.user_image.source = 'background.jpg'
+        self.ids.user_image.reload()
+        #self.ids.user_image.texture = None
         # Disable buttons at start
         self.ids.like_button.disabled = True
         self.ids.dislike_button.disabled = True
@@ -412,6 +408,7 @@ class ScreenOne(Screen):
         self.ids.timer_label.text = ""
         #self.resize_screen()
         QUIT = True
+        self.spawn_camera_thread()
 
 #############################################################
 # This class is for instantiating an initial screen to use.
