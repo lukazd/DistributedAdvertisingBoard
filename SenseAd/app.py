@@ -24,7 +24,7 @@ def birthday(date):
 
 application = Flask(__name__)
 
-TRAINGING_PHASE = True
+TRAINING_PHASE = True
 
 db = firestore.Client()
 
