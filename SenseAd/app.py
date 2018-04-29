@@ -44,6 +44,21 @@ def rateAd():
     if user_id is None or ad_id is None or rating is None:
         return abort(400)
 
+    rating_number = 1
+    if (rating == "like"):
+        rating_number = 3
+    if (rating == "neutral")
+        rating_number = 2
+
+    data = {
+        u'user_id': user_id,
+        u'ad_id': ad_id,
+        u'rating': rating
+    }
+
+    # Add a new doc in collection 'cities' with ID 'LA'
+    db.collection(u'ratings').document(user_id +'-' + ad_id).set(data)
+
     return "Thanks for submitting rating"
 
 @application.route("/logOut", methods=['POST'])
