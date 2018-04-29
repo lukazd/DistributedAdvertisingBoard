@@ -30,12 +30,12 @@ def getAdsForUser():
 
     ads = []
 
+    print("recommendations")
+    print(recommendations)
     if recommendations is None:
         random_docs = random.sample(docs, 10)
         for doc in random_docs:
             recommendations.append(doc.id)
-        print("recommendations")
-        print(recommendations)
 
     for doc in docs:
         doc_id = doc.id
