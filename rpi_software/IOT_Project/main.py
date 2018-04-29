@@ -254,6 +254,7 @@ class ScreenOne(Screen):
             self.ids.center_image.reload()
         else:
             # TODO: make a popup saying the ads are done
+            print("make a popup")
 
 
     def start_ad_timer(self, args):
