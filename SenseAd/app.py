@@ -28,14 +28,13 @@ def getAdsForUser():
     recommendations = person.get("recommendations")
 
     docs = db.collection(u'ads').get()
+    docs = list(docs)
 
     ads = []
 
-    print("recommendations")
-    print(recommendations)
     if recommendations is None:
         recommendations = []
-        random_docs = random.sample(list(docs), 10)
+        random_docs = random.sample(docs, 10)
         for doc in random_docs:
             recommendations.append(doc.id)
 
