@@ -119,6 +119,3 @@ def train_model(sex, age):
     filename = 'model.sav'
     pickle.dump(clf, open('model.sav', 'wb'))
 
-filter_predictions()
-download_ratings()
-build_recommendations()
