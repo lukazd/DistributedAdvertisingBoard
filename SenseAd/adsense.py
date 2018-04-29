@@ -83,6 +83,41 @@ def filter_predictions():
 
     print('prediction probability', clf.predict_proba(test[features])[0:10])
 
+def predict_categories(sex, age):
+    df = pd.read_csv('value.txt')
+    iris = load_iris()
+    df = pd.DataFrame(iris.data, columns=iris.feature_names)
+    df['species'] = pd.Categorical.from_codes(iris.target, iris.target_names)
+
+    df['is_train'] = np.random.uniform(0, 1, len(df)) <= .75
+
+    train, test = df[df['is_train']==True], df[df['is_train']==False]
+    print('Number of observations in the training data:', len(train))
+    print('Number of observation in the test data:', len(test))
+    features = df.columns[:4]
+
+    y = pd.factorize(train['species'])[0]
+
+    clf = RandomForestClassifier(n_jobs=2, random_state=0)
+
+    clf.fit(train[features], y)
+    print('test preditctions: ', clf.predict(test[features]))
+
+    print('prediction probability', clf.predict_proba(test[features])[0:10])
+
+def train_model(sex, age):
+    df = pd.read_csv('train.txt')
+    print(df)
+
+    features = df.columns[:6]
+
+    y = df.columns[7]
+
+    clf = RandomForestClassifier(n_jobs=2)
+
+    clf.fit(df[features], y)
+    filename = 'model.sav'
+    pickle.dump(clf, open('model.sav', 'wb'))
 
 filter_predictions()
 download_ratings()

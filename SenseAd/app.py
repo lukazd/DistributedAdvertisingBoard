@@ -1,6 +1,9 @@
 import sys,os
 import threading
 import random
+import datetime
+import dateutil
+import adsense
 
 from flask import Flask, request, abort, jsonify
 from google.cloud import firestore
@@ -8,7 +11,20 @@ from google.cloud import firestore
 sys.path.append(os.path.join(os.path.dirname(sys.path[0]), '..', 'DistributedAdvertisingBoard/iota'))
 import iota_payments
 
+def birthday(date):
+    # Get the current date
+    now = datetime.datetime.utcnow()
+    now = now.date()
+
+    # Get the difference between the current date and the birthday
+    age = dateutil.relativedelta.relativedelta(now, date)
+    age = age.years
+
+    return age
+
 application = Flask(__name__)
+
+TRAINGING_PHASE = True
 
 db = firestore.Client()
 
@@ -44,6 +60,13 @@ def getAdsForUser():
         if (doc_c["ad_id"] in recommendations):
             ads.append({"ad_id" : doc.id, "ad" : doc.to_dict()})
 
+    if (not TRAINING_PHASE):
+        sensor = db.collection(u'sensorData').document('1').get().to_dict()
+        temperature = sensor["temperature"]
+        pressure = sensor["pressure"]
+        humidity = sensor["humidity"]
+        traffic = sensor["traffic"]
+        adsense.predict_categories(person["sex"], birthday(person["bday"]))
 
     result = {"person" : person, "ads" : ads}
 
@@ -71,8 +94,26 @@ def rateAd():
         u'rating': rating_number
     }
 
-    # Add a new doc in collection 'cities' with ID 'LA'
     db.collection(u'ratings').document(user_id +'-' + ad_id).set(data)
+
+    ad = db.collection(u'ads').document(user_id).get().to_dict()
+    ad_category = ad["category"]
+
+    person = db.collection(u'personInfo').document(user_id).get().to_dict()
+    person_sex = person['sex']
+    person_age = birthday(person['bday'])
+
+    sensor = db.collection(u'sensorData').document('1').get().to_dict()
+    temperature = sensor["temperature"]
+    pressure = sensor["pressure"]
+    humidity = sensor["humidity"]
+    traffic = sensor["traffic"]
+
+    if (TRAINING_PHASE):
+        # sex,age,temperature,humidity,pressure,traffic,category,like
+        train_file = open("train.txt", "a")
+        train_file.write(person_sex,person_age,temperature,humidity,pressure,traffic,ad_category,str(rating == "Like"))
+        train_file.close()
 
     return "Thanks for submitting rating"
 
