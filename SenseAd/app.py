@@ -104,17 +104,19 @@ def rateAd():
 
     person = db.collection(u'personInfo').document(user_id).get().to_dict()
     person_sex = person['sex']
-    person_age = birthday(person['bday'])
+    person_age = str(birthday(person['bday']))
 
     sensor = db.collection(u'sensorData').document('1').get().to_dict()
-    temperature = sensor["temperature"]
-    pressure = sensor["pressure"]
-    humidity = sensor["humidity"]
-    traffic = sensor["traffic"]
+    temperature = str(sensor["temperature"])
+    pressure = str(sensor["pressure"])
+    humidity = str(sensor["humidity"])
+    traffic = str(sensor["traffic"])
 
     if (TRAINING_PHASE):
         # sex,age,temperature,humidity,pressure,traffic,category,like
         train_file = open("train.txt", "a")
+        data_list = [person_sex,person_age,temperature,humidity,pressure,traffic,ad_category,str(rating == "Like")]
+        data_to_write = ",".join(data_list)
         train_file.write(person_sex,person_age,temperature,humidity,pressure,traffic,ad_category,str(rating == "Like"))
         train_file.close()
 
