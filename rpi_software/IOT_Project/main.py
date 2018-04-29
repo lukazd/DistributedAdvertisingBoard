@@ -238,6 +238,7 @@ class ScreenOne(Screen):
         if (len(self.response_json["ads"]) > self.ad_counter):
             self.ids.center_image.source = self.response_json["ads"][self.ad_counter]["ad"]["url"]
             self.ids.center_image.reload()
+            self.start_ad_timer()
         else:
             self.begin_log_out()
 
