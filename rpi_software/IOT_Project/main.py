@@ -176,7 +176,7 @@ class ScreenOne(Screen):
 
         self.timer_stop=True
         self.disable_pref_buttons()
-        self.start_ad_timer(None)
+        self.start_ad_timer()
 
     @mainthread
     def set_init_widgets(self):
@@ -242,7 +242,7 @@ class ScreenOne(Screen):
         else:
             self.begin_log_out()
 
-    def start_ad_timer(self, args):
+    def start_ad_timer(self):
         self.ids.timer_label.color = 0, 1, 0, 1
         time.sleep(0.5)
 
@@ -263,7 +263,7 @@ class ScreenOne(Screen):
         self.popup_iota()
 
     @mainthread
-    def quit_main(self):
+    def quit_main(self, args):
         r = requests.post(SenseAdEndpoint.URL + SenseAdEndpoint.LOG_OUT_PATH, data={'user_id' : self.response_json["person"]["personId"], 'payment' : self.payment})
         self.ids.center_image.source = 'background.jpg'
         self.ids.user_image.source = 'background.jpg'
