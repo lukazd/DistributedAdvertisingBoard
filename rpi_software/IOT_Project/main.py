@@ -216,14 +216,12 @@ class ScreenOne(Screen):
     @mainthread
     def timer_label_count(self, num, *args):
         if self.timer_stop == True:
+            self.ids.timer_label.text = str(num)+'s'
             if num == 0:
                 self.ids.timer_label.color = 1, 0, 0, 1
-                self.ids.timer_label.text = str(num)+'s'
                 self.enable_pref_buttons()
-
-            self.ids.timer_label.color = 1, 1, 1, 1
-            self.ids.timer_label.text = str(num)+'s'
-            self.ids.timer_label.color = 0, 1, 0, 1
+            else:
+                self.ids.timer_label.color = 0, 1, 0, 1
 
     @mainthread
     def resize_screen(self):
@@ -231,13 +229,11 @@ class ScreenOne(Screen):
 
     @mainthread
     def pref_ads(self, opin_ad):
-        #TODO: save some of this info in instance variables
         r = requests.post(SenseAdEndpoint.URL + SenseAdEndpoint.RATE_AD_PATH, data={'user_id' : self.response_json["person"]["personId"], 'ad_id' : self.response_json["ads"][self.ad_counter]['ad_id'], 'rating': opin_ad})
         print(r.content)
 
         self.popup_iota()
 
-        #TODO: save some of this info in instance variables
         iota_payment_thread = threading.Thread(target=iota_payments.create_and_send_transactions, args=(self.response_json["person"]["iotaCode"], 1, 'SenseAd Payment'))
         iota_payment_thread.setDaemon(True)
         iota_payment_thread.start()
@@ -245,8 +241,7 @@ class ScreenOne(Screen):
         self.disable_pref_buttons()
         self.ad_counter += 1
 
-        # TODO: make sure this check for ads is correct
-        if len(self.response_json["ads"].get(self.ad_counter) != None):
+        if (len(self.response_json["ads"]) > self.ad_counter):
             self.ids.center_image.source = self.response_json["ads"][self.ad_counter]["ad"]["url"]
             self.ids.center_image.reload()
         else:
