@@ -96,7 +96,7 @@ def rateAd():
 
     db.collection(u'ratings').document(user_id +'-' + ad_id).set(data)
 
-    ad = db.collection(u'ads').document(user_id).get().to_dict()
+    ad = db.collection(u'ads').document(ad_id).get().to_dict()
     ad_category = ad["category"]
 
     person = db.collection(u'personInfo').document(user_id).get().to_dict()
