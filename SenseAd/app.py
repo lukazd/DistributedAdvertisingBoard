@@ -53,7 +53,7 @@ def rateAd():
     data = {
         u'user_id': user_id,
         u'ad_id': ad_id,
-        u'rating': rating
+        u'rating': rating_number
     }
 
     # Add a new doc in collection 'cities' with ID 'LA'
