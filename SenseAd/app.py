@@ -24,7 +24,7 @@ def getAdsForUser():
 
     person = db.collection(u'personInfo').document(user_id).get().to_dict()
 
-    recommendations = person["recommendations"]
+    recommendations = person.get("recommendations")
 
     docs = db.collection(u'ads').get()
 
@@ -34,6 +34,8 @@ def getAdsForUser():
         random_docs = random.sample(docs, 10)
         for doc in random_docs:
             recommendations.append(doc.id)
+        print("recommendations")
+        print(recommendations)
 
     for doc in docs:
         doc_id = doc.id
