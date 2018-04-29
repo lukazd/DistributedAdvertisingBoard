@@ -254,8 +254,8 @@ class ScreenOne(Screen):
 
     @mainthread
     def popup_iota(self):
-        popup_text = 'Logging Out. You received an IOTA payment of ' + str(self.payment)
-        content = Label( text=popup_text,            
+        popup_text = 'Logging Out. You received a payment of ' + str(self.payment) + 'IOTA.'
+        content = Label( text=popup_text,
                         background_normal='',
                         background_color=[0, 0, 0, 1],
                         text_size: self.size,
