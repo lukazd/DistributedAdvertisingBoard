@@ -174,7 +174,6 @@ class ScreenOne(Screen):
         self.ids.neutral_button.text = "Neutral"
         self.ids.neutral_button.color = 0, 0.75, 1, 0.5
 
-        time.sleep(0.5)
         self.timer_stop=True
         self.disable_pref_buttons()
         self.start_ad_timer(None)
@@ -188,7 +187,7 @@ class ScreenOne(Screen):
         self.ids.like_button.bind(on_press=lambda *ads: self.pref_ads('Like'))
         self.ids.dislike_button.bind(on_press=lambda *ads: self.pref_ads('Dislike'))
         self.ids.neutral_button.bind(on_press=lambda *ads: self.pref_ads('Neutral'))
-        self.ids.quit_button.bind(on_press=lambda *args: self.quit_main())
+        self.ids.quit_button.bind(on_press=lambda *args: self.begin_log_out())
 
         self.ids.like_button.disabled = True
         self.ids.dislike_button.disabled = True
@@ -233,9 +232,6 @@ class ScreenOne(Screen):
         r = requests.post(SenseAdEndpoint.URL + SenseAdEndpoint.RATE_AD_PATH, data={'user_id' : self.response_json["person"]["personId"], 'ad_id' : self.response_json["ads"][self.ad_counter]['ad_id'], 'rating': opin_ad})
         print(r.content)
 
-        # TODO: do this when the user logs out or when they run out of ads
-        #self.popup_iota()
-
         self.disable_pref_buttons()
         self.ad_counter += 1
 
@@ -243,9 +239,7 @@ class ScreenOne(Screen):
             self.ids.center_image.source = self.response_json["ads"][self.ad_counter]["ad"]["url"]
             self.ids.center_image.reload()
         else:
-            # TODO: make a popup saying the ads are done
-            print("make a popup")
-
+            self.begin_log_out()
 
     def start_ad_timer(self, args):
         self.ids.timer_label.color = 0, 1, 0, 1
@@ -256,15 +250,20 @@ class ScreenOne(Screen):
 
     @mainthread
     def popup_iota(self):
-        content = Label(text='IOTA Transaction Initiated.')
+        popup_text = 'Logging Out. You received an IOTA payment of ' + str(self.payment)
+        content = Label(text=popup_text)
         popup = Popup(title='IOTA Payment', content=content, auto_dismiss=True,
                       size_hint=(None, None), size=(300, 100))
         content.bind(on_release=popup.dismiss)
-        popup.bind(on_dismiss=self.start_ad_timer)
+        popup.bind(on_dismiss=self.quit_main)
         popup.open()
+
+    def begin_log_out(self):
+        self.popup_iota()
 
     @mainthread
     def quit_main(self):
+        r = requests.post(SenseAdEndpoint.URL + SenseAdEndpoint.LOG_OUT_PATH, data={'user_id' : self.response_json["person"]["personId"], 'payment' : self.payment})
         self.ids.center_image.source = 'background.jpg'
         self.ids.user_image.source = 'background.jpg'
         self.ids.user_image.reload()
