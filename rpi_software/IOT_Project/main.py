@@ -138,27 +138,29 @@ class ScreenOne(Screen):
 
     @mainthread
     def help_popup(self):
-        #TODO: Fix this string
-        help_text = (
-            'This is the SenseAd Kiosk. If you have registered through the app then the kiosk '
-            'will be able to identify you. When prompted, select a category of ads to view. '
-            'A timer will be on to indicate if you have viewed the ad for enough time (~10 seconds).\n'
-        )
+        help_text = 'This is the SenseAd Kiosk. If you have registered through the app then the kiosk will be able to identify you. When prompted, select a category of ads to view. A timer will be on to indicate if you have viewed the ad for enough time (10 seconds).\n'
         button_text = 'Press to close me!'
         content = BoxLayout()
-        popup_help = Popup(title='Help Page', content=content, auto_dismiss=True, size_hint=[0.7, 0.7])
+        self.popup_help = Popup(title='Help Page', content=content, auto_dismiss=True, size_hint=[.6,.3])
 
-        label = Label(
+        self.label_help = Label(
             text=help_text,
             background_normal='',
             background_color=[0, 0, 0, 1],
-            text_size: self.size,
-            halign: 'right',
-            valign: 'middle'
+            text_size_y=self.popup_help.size,
+            padding_x=50,
+            strip=True,
+            valign="center",
+            halign="left"
         )
 
-        content.add_widget(label)
-        popup_help.open()
+        self.popup_help.bind(size=self.popup_update)
+        content.add_widget(self.label_help)
+        self.popup_help.content = content
+        self.popup_help.open()
+
+    def popup_update(self, *args):
+        self.label_help.text_size = self.popup_help.size
 
     @mainthread
     def change_texts(self):
@@ -254,15 +256,16 @@ class ScreenOne(Screen):
 
     @mainthread
     def popup_iota(self):
-        popup_text = 'Logging Out. You received a payment of ' + str(self.payment) + 'IOTA.'
+        popup_text = 'You received a payment of ' + str(self.payment) + ' IOTA.'
         content = Label( text=popup_text,
                         background_normal='',
                         background_color=[0, 0, 0, 1],
-                        text_size: self.size,
-                        halign: 'right',
-                        valign: 'middle')
+                        text_size=self.size,
+                        halign='center',
+                        valign='middle',
+                        padding_x=50)
         popup = Popup(title='IOTA Payment', content=content, auto_dismiss=True,
-                      size_hint=(None, None), size=(300, 100))
+                      size_hint=[.4, .2])
         content.bind(on_release=popup.dismiss)
         popup.bind(on_dismiss=self.quit_main)
         popup.open()
