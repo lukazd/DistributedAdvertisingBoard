@@ -32,6 +32,7 @@ import iota_payments
 
 urllib3.disable_warnings()
 kivy.require('1.10.0')
+Config.set('graphics', 'fullscreen', '0')
 Config.set('graphics', 'window_state', 'maximized')
 
 
