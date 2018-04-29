@@ -43,7 +43,11 @@ def build_recommendations():
     top_n = get_top_n(predictions, n=2)
 
     for uid, user_ratings in top_n.items():
-        print(uid, [iid for (iid, _) in user_ratings])
+        data = {
+            u'recommendations': [iid for (iid, _) in user_ratings],
+        }
+
+        db.collection(u'personInfo').document(uid).update(data)
 
 def download_ratings():
     global db
