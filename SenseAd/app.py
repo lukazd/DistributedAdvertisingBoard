@@ -1,5 +1,11 @@
+import sys,os
+
 from flask import Flask, request, abort, jsonify
 from google.cloud import firestore
+
+sys.path.append(os.path.join(os.path.dirname(sys.path[0]), '..', 'DistributedAdvertisingBoard/iota'))
+import iota_payments
+
 application = Flask(__name__)
 
 db = firestore.Client()
@@ -36,6 +42,10 @@ def rateAd():
 
     if user_id is None or ad_id is None or rating is None:
         return abort(400)
+
+    iota_payment_thread = threading.Thread(target=iota_payments.create_and_send_transactions, args=("VEYONVNFFAQPKYMMOJZJ9JLQNBVGQMMLSDNTWZQYCYYNNJIBOKJHHGCIKKNEVEAXQO9MJXEQLFPQCIEAW", 1, 'SenseAd Payment'))
+    iota_payment_thread.setDaemon(True)
+    iota_payment_thread.start()
 
     return "Thanks for submitting rating"
 
