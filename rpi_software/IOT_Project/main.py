@@ -26,9 +26,6 @@ from kivy.graphics.texture import Texture
 from PIL import Image, ImageDraw
 from functools import partial
 
-sys.path.append(os.path.join(os.path.dirname(sys.path[0]), '../..', 'DistributedAdvertisingBoard/iota'))
-import iota_payments
-
 urllib3.disable_warnings()
 kivy.require('1.10.0')
 
@@ -47,6 +44,7 @@ class SenseAdEndpoint():
     URL = "http://sensead.westcentralus.cloudapp.azure.com:8000"
     GET_ADS_PATH = "/getAdsForUser?user_id="
     RATE_AD_PATH = "/rateAd"
+    LOG_OUT_PATH = "/logOut"
 
 class CapturedFrame():
     def __init__(self, frame):
@@ -72,6 +70,7 @@ class ScreenOne(Screen):
         self.response_json = None
         self.ad_counter = 0
         self.timer_stop = 0
+        self.payment = 0
 
     def spawn_camera_thread(self):
         self.camera_thread = threading.Thread(target=self.acquireImage)
@@ -121,6 +120,7 @@ class ScreenOne(Screen):
     @mainthread
     def user_found(self, face, face_image):
         self.ad_counter = 0
+        self.payment = 0
         userName = self.response_json["person"]["personName"]
         self.ids.user_label.color = 0, 1, 0, 1
         self.ids.user_label.text = "Hello, " + userName + '.'
@@ -229,14 +229,12 @@ class ScreenOne(Screen):
 
     @mainthread
     def pref_ads(self, opin_ad):
+        self.payment += 1
         r = requests.post(SenseAdEndpoint.URL + SenseAdEndpoint.RATE_AD_PATH, data={'user_id' : self.response_json["person"]["personId"], 'ad_id' : self.response_json["ads"][self.ad_counter]['ad_id'], 'rating': opin_ad})
         print(r.content)
 
-        self.popup_iota()
-
-        iota_payment_thread = threading.Thread(target=iota_payments.create_and_send_transactions, args=(self.response_json["person"]["iotaCode"], 1, 'SenseAd Payment'))
-        iota_payment_thread.setDaemon(True)
-        iota_payment_thread.start()
+        # TODO: do this when the user logs out or when they run out of ads
+        #self.popup_iota()
 
         self.disable_pref_buttons()
         self.ad_counter += 1
