@@ -29,6 +29,12 @@ def getAdsForUser():
     docs = db.collection(u'ads').get()
 
     ads = []
+
+    if recommendations is None:
+        random_docs = random.sample(docs, 10)
+        for doc in random_docs:
+            recommendations.append(doc.id)
+
     for doc in docs:
         doc_id = doc.id
         doc_c = doc.to_dict()
