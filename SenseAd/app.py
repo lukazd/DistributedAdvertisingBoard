@@ -12,12 +12,15 @@ sys.path.append(os.path.join(os.path.dirname(sys.path[0]), '..', 'DistributedAdv
 import iota_payments
 
 def birthday(date):
+    format_str = '%m/%d/%Y' # The format
+    bday = datetime.datetime.strptime(date, format_str)
+
     # Get the current date
     now = datetime.datetime.utcnow()
     now = now.date()
 
     # Get the difference between the current date and the birthday
-    age = dateutil.relativedelta.relativedelta(now, date)
+    age = dateutil.relativedelta.relativedelta(now, bday)
     age = age.years
 
     return age
