@@ -47,7 +47,7 @@ def rateAd():
     rating_number = 1
     if (rating == "like"):
         rating_number = 3
-    if (rating == "neutral")
+    if (rating == "neutral"):
         rating_number = 2
 
     data = {
