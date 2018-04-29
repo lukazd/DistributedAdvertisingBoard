@@ -151,7 +151,10 @@ class ScreenOne(Screen):
         label = Label(
             text=help_text,
             background_normal='',
-            background_color=[0, 0, 0, 1]
+            background_color=[0, 0, 0, 1],
+            text_size: self.size,
+            halign: 'right',
+            valign: 'middle'
         )
 
         content.add_widget(label)
@@ -252,7 +255,12 @@ class ScreenOne(Screen):
     @mainthread
     def popup_iota(self):
         popup_text = 'Logging Out. You received an IOTA payment of ' + str(self.payment)
-        content = Label(text=popup_text)
+        content = Label( text=popup_text,            
+                        background_normal='',
+                        background_color=[0, 0, 0, 1],
+                        text_size: self.size,
+                        halign: 'right',
+                        valign: 'middle')
         popup = Popup(title='IOTA Payment', content=content, auto_dismiss=True,
                       size_hint=(None, None), size=(300, 100))
         content.bind(on_release=popup.dismiss)
