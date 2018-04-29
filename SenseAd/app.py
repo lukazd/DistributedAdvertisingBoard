@@ -117,7 +117,7 @@ def rateAd():
         train_file = open("train.txt", "a")
         data_list = [person_sex,person_age,temperature,humidity,pressure,traffic,ad_category,str(rating == "Like")]
         data_to_write = ",".join(data_list)
-        train_file.write(person_sex,person_age,temperature,humidity,pressure,traffic,ad_category,str(rating == "Like"))
+        train_file.write(data_to_write)
         train_file.close()
 
     return "Thanks for submitting rating"
