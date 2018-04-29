@@ -138,7 +138,7 @@ class ScreenOne(Screen):
 
     @mainthread
     def help_popup(self):
-        help_text = 'This is the SenseAd Kiosk. If you have registered through the app then the kiosk will be able to identify you. When prompted, select a category of ads to view. A timer will be on to indicate if you have viewed the ad for enough time (10 seconds).\n'
+        help_text = 'This is the SenseAd Kiosk. If you have registered through the app then the kiosk will be able to identify you. When prompted, select a category of ads to view. A timer will be on to indicate if you have viewed the ad for enough time (5 seconds).\n'
         button_text = 'Press to close me!'
         content = BoxLayout()
         self.popup_help = Popup(title='Help Page', content=content, auto_dismiss=True, size_hint=[.6,.3])
@@ -251,8 +251,8 @@ class ScreenOne(Screen):
         self.ids.timer_label.color = 0, 1, 0, 1
         time.sleep(0.5)
 
-        for i in range(10, -1, -1):
-            Clock.schedule_once(partial(self.timer_label_count, i), 10-i)
+        for i in range(5, -1, -1):
+            Clock.schedule_once(partial(self.timer_label_count, i), 5-i)
 
     @mainthread
     def popup_iota(self):

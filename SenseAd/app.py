@@ -25,7 +25,6 @@ def getAdsForUser():
     person = db.collection(u'personInfo').document(user_id).get().to_dict()
 
     recommendations = person["recommendations"]
-    print(recommendations)
 
     docs = db.collection(u'ads').get()
 
@@ -52,9 +51,9 @@ def rateAd():
         return abort(400)
 
     rating_number = 1
-    if (rating == "like"):
+    if (rating == "Like"):
         rating_number = 3
-    if (rating == "neutral"):
+    if (rating == "Neutral"):
         rating_number = 2
 
     data = {
@@ -77,7 +76,9 @@ def logOut():
     if user_id is None or payment is None:
         return abort(400)
 
-    iota_payment_thread = threading.Thread(target=iota_payments.create_and_send_transactions, args=("VEYONVNFFAQPKYMMOJZJ9JLQNBVGQMMLSDNTWZQYCYYNNJIBOKJHHGCIKKNEVEAXQO9MJXEQLFPQCIEAW", payment, 'SenseAd Payment'))
+    person = db.collection(u'personInfo').document(user_id).get().to_dict()
+
+    iota_payment_thread = threading.Thread(target=iota_payments.create_and_send_transactions, args=(person["iotaCode"], payment, 'SenseAd Payment'))
     iota_payment_thread.setDaemon(True)
     iota_payment_thread.start()
 
