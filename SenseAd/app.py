@@ -22,13 +22,20 @@ def getAdsForUser():
     if user_id is None:
         return abort(400)
 
-    docs = db.collection(u'ads').where(u'category', u'==', u'carAds').get()
+    person = db.collection(u'personInfo').document(user_id).get().to_dict()
+
+    recommendations = person["recommendations"]
+    print(recommendations)
+
+    docs = db.collection(u'ads').get()
 
     ads = []
     for doc in docs:
-        ads.append({"ad_id" : doc.id, "ad" : doc.to_dict()})
+        doc_id = doc.id
+        doc_c = doc.to_dict()
+        if (doc_c["ad_id"] in recommendations):
+            ads.append({"ad_id" : doc.id, "ad" : doc.to_dict()})
 
-    person = db.collection(u'personInfo').document(user_id).get().to_dict()
 
     result = {"person" : person, "ads" : ads}
 
@@ -75,7 +82,6 @@ def logOut():
     iota_payment_thread.start()
 
     return "Thanks for submitting rating"
-
 
 if __name__ == "__main__":
     application.run(host='0.0.0.0', debug=True)
