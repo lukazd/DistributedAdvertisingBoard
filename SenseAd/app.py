@@ -44,7 +44,18 @@ def rateAd():
     if user_id is None or ad_id is None or rating is None:
         return abort(400)
 
-    iota_payment_thread = threading.Thread(target=iota_payments.create_and_send_transactions, args=("VEYONVNFFAQPKYMMOJZJ9JLQNBVGQMMLSDNTWZQYCYYNNJIBOKJHHGCIKKNEVEAXQO9MJXEQLFPQCIEAW", 1, 'SenseAd Payment'))
+    return "Thanks for submitting rating"
+
+@application.route("/logOut", methods=['POST'])
+def logOut():
+    data = request.form
+    user_id = data["user_id"]
+    payment = data.get('payment', type=int)
+
+    if user_id is None or payment is None:
+        return abort(400)
+
+    iota_payment_thread = threading.Thread(target=iota_payments.create_and_send_transactions, args=("VEYONVNFFAQPKYMMOJZJ9JLQNBVGQMMLSDNTWZQYCYYNNJIBOKJHHGCIKKNEVEAXQO9MJXEQLFPQCIEAW", payment, 'SenseAd Payment'))
     iota_payment_thread.setDaemon(True)
     iota_payment_thread.start()
 
