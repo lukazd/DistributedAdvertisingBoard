@@ -22,7 +22,6 @@ from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivy.properties import ObjectProperty
 from kivy.uix.image import AsyncImage
 from kivy.core.window import Window
-from kivy.config import Config
 from kivy.graphics.texture import Texture
 from PIL import Image, ImageDraw
 from functools import partial
@@ -32,9 +31,6 @@ import iota_payments
 
 urllib3.disable_warnings()
 kivy.require('1.10.0')
-Config.set('graphics', 'fullscreen', '0')
-Config.set('graphics', 'window_state', 'maximized')
-
 
 ######################### Microsoft Cognitive ###############################
 global mcg_group_name
