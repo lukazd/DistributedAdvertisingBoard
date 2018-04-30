@@ -64,12 +64,14 @@ def getAdsForUser():
             ads.append({"ad_id" : doc.id, "ad" : doc.to_dict()})
 
     if (not TRAINING_PHASE):
-        sensor = db.collection(u'sensorData').document('1').get().to_dict()
-        temperature = sensor["temperature"]
-        pressure = sensor["pressure"]
-        humidity = sensor["humidity"]
-        traffic = sensor["traffic"]
-        adsense.predict_categories(person["sex"], birthday(person["bday"]))
+        categories_to_keep = adsense.predict_categories(person["sex"], birthday(person["bday"]))
+        if (len(categories_to_keep) > 0):
+            ads_to_keep = []
+            for ad in ads:
+                if (ad["category"] in categories_to_keep):
+                    ads_to_keep.append(ad) 
+            ads = ads_to_keep
+
 
     result = {"person" : person, "ads" : ads}
 
@@ -115,7 +117,7 @@ def rateAd():
     if (TRAINING_PHASE):
         # sex,age,temperature,humidity,pressure,traffic,category,like
         train_file = open("train.txt", "a")
-        data_list = [person_sex,person_age,temperature,humidity,pressure,traffic,ad_category,str(rating == "Like")]
+        data_list = [person_sex,person_age,temperature,humidity,pressure,traffic,ad_category,str(rating == "Like"),'\n']
         data_to_write = ",".join(data_list)
         train_file.write(data_to_write)
         train_file.close()

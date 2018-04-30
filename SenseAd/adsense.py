@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import pickle
 
 from adsense_classes import Advertisement, Sensors, User
 from google.cloud import firestore
@@ -84,38 +85,44 @@ def filter_predictions():
     print('prediction probability', clf.predict_proba(test[features])[0:10])
 
 def predict_categories(sex, age):
-    df = pd.read_csv('value.txt')
-    iris = load_iris()
-    df = pd.DataFrame(iris.data, columns=iris.feature_names)
-    df['species'] = pd.Categorical.from_codes(iris.target, iris.target_names)
+    sensor = db.collection(u'sensorData').document('1').get().to_dict()
+    temperature = sensor["temperature"]
+    pressure = sensor["pressure"]
+    humidity = sensor["humidity"]
+    traffic = sensor["traffic"]
 
-    df['is_train'] = np.random.uniform(0, 1, len(df)) <= .75
+    categories = ['carAds','foodAds', 'vacationAds', 'foodAds', 'videoGameAds', 'clothingAds','techAds']
+    categories_to_keep = []
+    df = pd.DataFrame(columns=['sex','age','temperature','pressure','humidity','traffic','category','like'])
+    for i in categories:
+        df.loc[i] = [sex, age, temperature, pressure, humidity, traffic, i,'0']
+        categories_to_keep.append(i)
 
-    train, test = df[df['is_train']==True], df[df['is_train']==False]
-    print('Number of observations in the training data:', len(train))
-    print('Number of observation in the test data:', len(test))
-    features = df.columns[:4]
+    df_var = pd.get_dummies(df).copy()
 
-    y = pd.factorize(train['species'])[0]
+    clf = pickle.load(open('model.sav', 'rb'))
+    return categories_to_keep
 
-    clf = RandomForestClassifier(n_jobs=2, random_state=0)
-
-    clf.fit(train[features], y)
-    print('test preditctions: ', clf.predict(test[features]))
-
-    print('prediction probability', clf.predict_proba(test[features])[0:10])
-
-def train_model(sex, age):
+def train_model():
     df = pd.read_csv('train.txt')
-    print(df)
+    df["sex"] = df["sex"].astype("category")
+    df["category"] = df["category"].astype("category")
+    df["like"] = df["like"].astype("category")
+    #print(df)
 
-    features = df.columns[:6]
 
-    y = df.columns[7]
+    features = df.columns[:7]
+
+    df_var = pd.get_dummies(df[features]).copy()
+
+    y = pd.factorize(df["like"])[0]
 
     clf = RandomForestClassifier(n_jobs=2)
+    #clf = GaussianNB()
 
-    clf.fit(df[features], y)
+    clf.fit(df_var, y)
     filename = 'model.sav'
     pickle.dump(clf, open('model.sav', 'wb'))
 
+train_model()
+predict_categories("Male", 34)

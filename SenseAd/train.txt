@@ -1,1 +1,10 @@
 sex,age,temperature,humidity,pressure,traffic,category,like
+Male,22,4,5,3,3,carAds,True
+Female,22,4,5,3,1,videoGameAds,False
+Female,21,4,6,3,2,carAds,True
+Male,35,4,5,3,7,foodAds,True
+Male,12,4,8,3,9,vacationAds,False
+Male,54,4,2,3,1,clothingAds,True
+Male,11,6,5,3,1,foodAds,False
+Male,12,4,5,7,1,carAds,True
+Male,33,4,5,3,1,techAds,True
