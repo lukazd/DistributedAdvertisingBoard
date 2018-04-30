@@ -9,15 +9,13 @@ public class SenseAdInfoModel{
     private String iotaCode;
     private String personName;
     private String personId;
-    private Map<String, Float> adPrefs;
 
-    public SenseAdInfoModel(String sex, String bday, String faceGroupName, String personName, String personId, Map<String, Float> adPrefs) {
+    public SenseAdInfoModel(String sex, String bday, String faceGroupName, String personName, String personId) {
         this.sex = sex;
         this.bday = bday;
         this.faceGroupName = faceGroupName;
         this.personName = personName;
         this.personId = personId;
-        this.adPrefs = adPrefs;
     }
 
 
@@ -69,11 +67,4 @@ public class SenseAdInfoModel{
         this.personId = personId;
     }
 
-    public Map<String, Float> getAdPrefs() {
-        return adPrefs;
-    }
-
-    public void setAdPrefs(Map<String, Float> adPrefs) {
-        this.adPrefs = adPrefs;
-    }
 }

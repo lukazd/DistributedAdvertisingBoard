@@ -58,7 +58,7 @@ public class UserDetailsActivity extends AppCompatActivity {
         // Get a support ActionBar corresponding to this toolbar
 
 
-        faceGroup = "large-person-group-1"; //TODO hardcoded group for now.
+        faceGroup = "large-person-group-dev"; //TODO hardcoded group for now.
         self = this;
         progressBar = findViewById(R.id.createPersonLoader);
         nameEditText = findViewById(R.id.nameEditText);
@@ -132,7 +132,7 @@ public class UserDetailsActivity extends AppCompatActivity {
     }
 
     public void SetupWalletClick(View view) {
-        Intent intent = new Intent(this, AdPrefsActivity.class);
+        Intent intent = new Intent(this, SetupWalletActivity.class);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("PersonId", personId);
         editor.putString("name", name);

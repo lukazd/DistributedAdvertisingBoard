@@ -130,7 +130,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="@string/set_preferences"
+                android:text="@string/setup_wallet"
                 android:onClick="SetupWalletClick"
                 android:enabled="false"
                 android:layout_marginStart="5dp"

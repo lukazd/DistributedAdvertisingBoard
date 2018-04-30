@@ -64,7 +64,6 @@ public class SetupWalletActivity extends AppCompatActivity {
     private EditText iotaEditText;
     private String iotaCode;
     private SenseAdInfoModel senseAdInfo;
-    private Map<String, Float> ad_map;
 
     private boolean isEdit;
 
@@ -97,9 +96,8 @@ public class SetupWalletActivity extends AppCompatActivity {
         String bday = prefs.getString("bday", "Not defined");
         String faceGroupName = prefs.getString("personGroupId", "large-person-group-1");
         iotaCode = prefs.getString("iotaCode", null);
-        ad_map = new HashMap<>();
-        getAdPrefs();
-        senseAdInfo = new SenseAdInfoModel(sex, bday, faceGroupName, personName, personId, ad_map);
+
+        senseAdInfo = new SenseAdInfoModel(sex, bday, faceGroupName, personName, personId);
 
         isEdit = iotaCode != null;
 
@@ -140,12 +138,6 @@ public class SetupWalletActivity extends AppCompatActivity {
 
 
         firestoreDB = FirebaseFirestore.getInstance();
-    }
-
-    private void getAdPrefs(){
-        for (String AD_CAT : AD_CATS) {
-            ad_map.put(AD_CAT, prefs.getFloat(AD_CAT, 5f));
-        }
     }
 
     @Override

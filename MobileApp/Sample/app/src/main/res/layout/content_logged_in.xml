@@ -41,23 +41,12 @@
             android:text="@string/change_personal_settings" />
 
         <Button
-            android:id="@+id/ch_ads"
-            style="@style/ButtonStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:layout_marginTop="10dp"
-            android:onClick="changeAdsOnClick"
-            android:text="@string/change_ad_prefs" />
-
-        <Button
             android:id="@+id/ch_iota"
             style="@style/ButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
             android:layout_marginTop="10dp"
-            android:background="?attr/colorButtonNormal"
             android:onClick="changeIOTA"
             android:text="@string/change_iota_code" />
     </LinearLayout>
