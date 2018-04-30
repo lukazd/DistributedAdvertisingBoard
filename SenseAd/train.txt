@@ -1,0 +1,1 @@
+sex,age,temperature,humidity,pressure,traffic,category,like

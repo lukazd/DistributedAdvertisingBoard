@@ -1,66 +1,50 @@
 #:kivy 1.10.0
 #:import Factory kivy.factory.Factory
 
-<MyPopup@Popup>:
-    auto_dismiss: False
-    title: 'Help-Me'
-    Button:
-        text: 'Stuff will be written to describe program \n Press to close me!'
-        background_normal: ''
-        background_color: 0, 0, 0, 1
-        on_release: root.dismiss()
-
-
 <ScreenOne>:
     GridLayout:
         orientation: 'vertical'
         size: root.size
-        rows: 3
+        rows: 4
 
         BoxLayout:
             size_hint: 1,0.1
-            cols: 3
-
-            Button:
-                id: categ_button
-                background_normal: ''
-                background_color: 0, 0, 0, 1
-                text: ""
-                font_weight: 'Bold'
-                font_size: 20
-                size_hint_x: 0.2
-
-            Label:
-                id: dab_label
-                text: 'Distributed Advertising Board'
-                font_size: 40
-                font_weight: 'Bold'
-                background_normal: ''
-                background_color: 0, 0, 0, 1
-                size_hint_x: 0.4
+            cols: 2
 
             Label:
                 id: timer_label
                 background_normal: ''
                 background_color: 0, 0, 0, 1
-                text: ""
+                text: ''
                 font_weight: 'Bold'
                 font_size: 30
                 color: 0, 0.8, 0, 1
                 size_hint_x: 0.2
 
-        BoxLayout:
-            size_hint: 1,0.8
-            cols: 3
-
-            Button:
-                id: left_button
+            Label:
+                id: dab_label
+                text: 'SenseAd'
+                font_size: 40
+                font_weight: 'Bold'
                 background_normal: ''
                 background_color: 0, 0, 0, 1
-                text: ""
-                font_weight: 'Bold'
-                font_size: 50
-                size_hint_x: 0.1
+                size_hint_x: 0.6
+
+            Image:
+                id: user_image
+                source: "background.jpg"
+                texture: 
+                pos: self.pos
+                center: self.parent.center
+                background_normal: ''
+                background_color: 0,0,0,1
+                allow_stretch: True
+                keep_ratio: True
+                size_hint_x: 0.2
+
+        BoxLayout:
+            size_hint: 1,0.7
+            cols: 1
 
             AsyncImage:
                 id: center_image
@@ -68,19 +52,41 @@
                 center: self.parent.center
                 size: self.texture_size
                 allow_stretch: True
-                keep_ratio: False
-                size_hint_x: 0.8
+                keep_ratio: True
                 background_normal: ''
                 background_color: 0,0,0,1
                 source: 'background.jpg'
+
+        BoxLayout:
+            size_hint: 1, 0.1
+            cols: 3
+
             Button:
-                id: right_button
+                id: like_button
+                size_hint_x: 1.0/3.0
+                font_weight: "Bold"
+                font_size: 40
                 background_normal: ''
                 background_color: 0, 0, 0, 1
-                text: ""
-                font_weight: 'Bold'
-                font_size: 50
-                size_hint_x: 0.1
+                padding_x: 10
+
+            Button:
+                id: neutral_button
+                size_hint_x: 1.0/3.0
+                font_weight: "Bold"
+                font_size: 40
+                background_normal: ''
+                background_color: 0, 0, 0, 1
+                padding_x: 10
+
+            Button:
+                id: dislike_button
+                size_hint_x: 1.0/3.0
+                font_weight: "Bold"
+                font_size: 40
+                background_normal: ''
+                background_color: 0, 0, 0, 1
+                padding_x: 10
 
         BoxLayout:
             size_hint: 1,0.1
@@ -100,76 +106,23 @@
                 color: 1, 0, 0, 1
 
             Button:
+                id: quit_button
+                background_normal: ''
+                background_color: 0.8, 0, 0, 1
+                text: ""
+                font_weight: 'Bold'
+                font_size: 40
+                size_hint_x: 0.2
+                
+            Button:
                 id: help_button
                 text: 'Help-Me'
                 font_weight: "Bold"
                 font_size: 40
                 size_hint_x: 0.2
                 background_normal: ''
-                background_color: 0.8, 0, 0, 1
-                on_release: Factory.MyPopup().open()
-
-            Button:
-                id: quit_button
-                background_normal: ''
-                background_color: 0, 0, 0, 1
-                text: ""
-                font_weight: 'Bold'
-                font_size: 40
-                color: 0, 0, 0, 1
-                size_hint_x: 0.2
-
-<CustomDropDown>:
-    id: dropDownID
-    Button:
-        text: 'Cars'
-        font_weight: "Bold"
-        font_size: 20
-        size_hint_y: None
-        height: '48dp'
-        background_normal: ''
-        background_color: 0,0,0,1
-        on_press: root.select('Category: Cars')
-
-    Button:
-        text: 'Clothing'
-        font_weight: "Bold"
-        font_size: 20
-        size_hint_y: None
-        height: '48dp'
-        background_normal: ''
-        background_color: 0,0,0,1
-        on_press: root.select('Category: Clothing')
-
-    Button:
-        text: 'Food'
-        font_weight: "Bold"
-        font_size: 20
-        size_hint_y: None
-        height: '48dp'
-        background_normal: ''
-        background_color: 0,0,0,1
-        on_release: root.select('Category: Food')
-
-    Button:
-        text: 'Video Games'
-        font_weight: "Bold"
-        font_size: 20
-        size_hint_y: None
-        height: '48dp'
-        background_normal: ''
-        background_color: 0,0,0,1
-        on_press: root.select('Category: Video Games')
-
-    Button:
-        text: 'Personalized Ads'
-        font_weight: "Bold"
-        font_size: 20
-        size_hint_y: None
-        height: '48dp'
-        background_normal: ''
-        background_color: 0,0,0,1
-        on_press: root.select('Category: Personalized Ads')
+                background_color: 0, 0.75, 1, 1
+                color: 1, 1, 1, 1
 
 <Manager>:
     id: screen_manager

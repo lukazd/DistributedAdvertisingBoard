@@ -1,250 +1,320 @@
-# Import main python library for numerical calculations
-import numpy as np
-from PIL import Image, ImageDraw
-# Import library for implementing delays
+import json
+import sys, os
+import requests
+import urllib, urllib3
 import time
-# Import library for multi-threading
 import threading
-
-# Import various kivy libraries
+import cv2
 import kivy
-kivy.require('1.10.0')
+
+import cognitive_face as CF
+import numpy as np
+
 from kivy.app import App
+from kivy.cache import Cache
 from kivy.clock import Clock, mainthread
 from kivy.graphics import *
-from kivy.uix.widget import Widget
-from kivy.uix.dropdown import DropDown
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.popup import Popup
+from kivy.uix.button import Button
+from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivy.properties import ObjectProperty
 from kivy.uix.image import AsyncImage
 from kivy.core.window import Window
+from kivy.graphics.texture import Texture
+from PIL import Image, ImageDraw
+from functools import partial
 
-# Import camera object for python
-import cv2
-# Specify the camera to use, 0 = built-in
-cap = cv2.VideoCapture(0)
+urllib3.disable_warnings()
+kivy.require('1.10.0')
 
-# Import
-import cognitive_face as CF
-file = open('keys.txt', 'r')
-KEY = file.readline()
+######################### Microsoft Cognitive ###############################
+global mcg_group_name
+mcg_group_name = "large-person-group-dev"
+KEY = os.environ['COG_KEY']
 CF.Key.set(KEY)
 BASE_URL = 'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/'  # Replace with your regional Base URL
 CF.BaseUrl.set(BASE_URL)
 
-## Import firebase library
-# import firebase_admin
-# from firebase_admin import credentials, firestore
-# cred = credentials.Certificate('')
-# default_app = firebase_admin.initialize_app(cred)
-# db = firestore.client
+#img_path = os.path.join(os.path.curdir, 'environment_image.png')
+################### Initialize global variables ##############################
 
+class SenseAdEndpoint():
+    URL = "http://sensead.westcentralus.cloudapp.azure.com:8000"
+    GET_ADS_PATH = "/getAdsForUser?user_id="
+    RATE_AD_PATH = "/rateAd"
+    LOG_OUT_PATH = "/logOut"
 
-# Initialize global variables
-global wait
-wait = 4    # set rate (in seconds) for acquiring frames from camera
-global QUIT
-QUIT = True # boolean for terminating camera (maybe app)
+class CapturedFrame():
+    def __init__(self, frame):
+        self.frame = frame
 
-##################################################
-# Class which runs the functional GUI application.
-##################################################
+    def read(self):
+        png_image = cv2.imencode('.png', self.frame)[1]
+        return bytes(bytearray(png_image.tostring()))
+
+    def texture(self):
+        buf = cv2.flip(self.frame, 0).tostring()
+        image_texture = Texture.create(size=(self.frame.shape[1], self.frame.shape[0]), colorfmt='bgr')
+        image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
+        return image_texture
+
 class ScreenOne(Screen):
-    ##########################################################
-    # This function runs when the class object is initialized
-    # and ran (not 100% sure).
-    ##########################################################
+
     def __init__(self, **kwargs):
         super(ScreenOne, self).__init__(**kwargs)
+        self.camera_thread = threading.Thread(target=self.acquireImage)
+        self.wait = 3
+        self.quit = True
+        self.response_json = None
+        self.ad_counter = 0
+        self.timer_stop = 0
+        self.payment = 0
 
-    ##############################################################
-    # This is an event that is fired when the screen is displayed.
-    ##############################################################
+    def spawn_camera_thread(self):
+        self.camera_thread = threading.Thread(target=self.acquireImage)
+        self.camera_thread.setDaemon(True)
+        self.camera_thread.start()
+
     def on_enter(self, *args):
-        # Initialize a lock object -> haven't found reason to use
-        # but its here in case :D
-        global lock
-        lock = threading.Lock()
-        # Start a separate thread for user recognition
-        global camera_thread
-        #camera_thread = threading.Thread(target=self.acquireImage)
-        #camera_thread.start()
-        #camera_thread.join()
-        # Start a separate thread for GUI
-        global main_thread
-        main_thread = threading.Thread(target=self.set_init_widgets)
-        main_thread.start()
-        main_thread.join()
+        self.set_init_widgets()
+        self.spawn_camera_thread()
 
-    #######################################################
-    # Function for acquiring images/frames from environment
-    #######################################################
+    def getRectangle(self, faceDictionary):
+        rect = faceDictionary['faceRectangle']
+        left = rect['left']
+        top = rect['top']
+        bottom = left + rect['height']
+        right = top + rect['width']
+        return ((left, top), (bottom, right))
+
     def acquireImage(self):
+        # State global variables
+        cap = cv2.VideoCapture(0)
+
         while True:
-            # Code for waiting after frame (integer value to mili-seconds)
-            time.sleep(wait)
-            # Capture frame-by-frame
-            ret, frame = cap.read()
+            # Code for waiting after frame (integer value to milli-seconds)
+            time.sleep(self.wait)
+
+            if self.quit == True:
+                ret, frame = cap.read()
+
             # Check if frame was successfully acquired
             if ret == True:
-                # Our operations on the frame come here
-                color_obj = cv2.cvtColor(frame, cv2.COLORMAP_BONE)
-                # Write the frame into the file newImage.jpg
-                cv2.imwrite('environment_image.png', color_obj)
-                check = main_thread.isAlive()
-                print(check)
-                faces = CF.face.detect('environment_image.png')
-                # Communicate with user faces database here
-                #
-                # If face is of a user, proceed to next stage
-                # if face....
-                #   # Call function changeTexts
+                face_image = CapturedFrame(frame)
 
-                # self.center_image.source = 'newImage.png'
+                faces = CF.face.detect(face_image)
+                for face in faces:
+                    identities = CF.face.identify([face['faceId']], large_person_group_id=mcg_group_name)[0]["candidates"]
 
+                    if len(identities) > 0:
+                        ad_request_url = SenseAdEndpoint.URL + SenseAdEndpoint.GET_ADS_PATH + identities[0]['personId']
+                        contents = requests.get(ad_request_url)
+                        self.response_json = contents.json()
+                        self.quit = False
+                        self.user_found(face, face_image)
+                        cap.release()
+                        return
 
-        # self.ids.label_1_sc1.color = 0,1,0,1
-        # self.ids.label_1_sc1.text = "User Found..."
-
-    ####################################################################
-    # Use this function for changing the text parameters when a user has
-    # been found via function acquireImage.
-    ####################################################################
     @mainthread
-    def changeTexts(self):
-        # Disable category, go left, go right, and quit buttons at start
-        self.ids.left_button.disabled = False
-        self.ids.right_button.disabled = False
-        self.ids.categ_button.disabled = False
-        self.ids.quit_button.disabled = False
-        # Set attributes of GUI widgets to use when user is found
-        self.ids.categ_button.text = "Category:______"
-        self.ids.categ_button.color = 1, 1, 0, 1
-        self.ids.quit_button.text = "QUIT APP"
-        self.ids.quit_button.color = 1, 0, 0, 1
-        self.ids.left_button.text = "<"
-        self.ids.right_button.text = ">"
-        self.ids.timer_label.text = "0 sec"
+    def user_found(self, face, face_image):
+        self.ad_counter = 0
+        self.payment = 0
+        userName = self.response_json["person"]["personName"]
+        self.ids.user_label.color = 0, 1, 0, 1
+        self.ids.user_label.text = "Hello, " + userName + '.'
+        #img = Image.open(img_path)
+        #img2 = img.crop((self.getRectangle(face)[0][0] - 40, self.getRectangle(face)[0][1] - 75,
+        #                 self.getRectangle(face)[1][0] + 40, self.getRectangle(face)[1][1] + 30))
+        #img2.save("temp_img2.png")
+        #self.ids.user_image.source = ""
+        #self.ids.user_image.source = "temp_img2.png"
+        self.ids.user_image.texture = face_image.texture()
+        #self.ids.user_image.reload()
+        #self.ids.user_image.source = ""
+        self.ids.center_image.source = self.response_json["ads"][self.ad_counter]["ad"]["url"]
+        self.change_texts()
 
-    ###############################################################
-    # Use this function for initializing the initial color, format,
-    # and functionality of the GUI widgets
-    ###############################################################
+    @mainthread
+    def help_popup(self):
+        help_text = 'This is the SenseAd Kiosk. If you have registered through the app then the kiosk will be able to identify you. When prompted, select a category of ads to view. A timer will be on to indicate if you have viewed the ad for enough time (5 seconds).\n'
+        button_text = 'Press to close me!'
+        content = BoxLayout()
+        self.popup_help = Popup(title='Help Page', content=content, auto_dismiss=True, size_hint=[.6,.3])
+
+        self.label_help = Label(
+            text=help_text,
+            background_normal='',
+            background_color=[0, 0, 0, 1],
+            text_size_y=self.popup_help.size,
+            padding_x=50,
+            strip=True,
+            valign="center",
+            halign="left"
+        )
+
+        self.popup_help.bind(size=self.popup_update)
+        content.add_widget(self.label_help)
+        self.popup_help.content = content
+        self.popup_help.open()
+
+    def popup_update(self, *args):
+        self.label_help.text_size = self.popup_help.size
+
+    @mainthread
+    def change_texts(self):
+        self.ids.like_button.disabled = True
+        self.ids.dislike_button.disabled = True
+        self.ids.neutral_button.disabled = True
+        self.ids.quit_button.disabled = False
+
+        self.ids.quit_button.text = "Log Out"
+        self.ids.quit_button.color = 1, 1, 1, 1
+        self.ids.timer_label.text = "0s"
+        self.ids.like_button.text = "Like"
+        self.ids.like_button.color = 0, 1, 0, 0.5
+        self.ids.dislike_button.text = "Dislike"
+        self.ids.dislike_button.color = 1, 0, 0, 0.5
+        self.ids.neutral_button.text = "Neutral"
+        self.ids.neutral_button.color = 0, 0.75, 1, 0.5
+
+        self.timer_stop=True
+        self.disable_pref_buttons()
+        self.start_ad_timer()
+
     @mainthread
     def set_init_widgets(self):
-        # Initialize timer label to blank
+        self.timer_stop=False
         self.ids.timer_label.text = ""
-        # Bind buttons on GUI to specific functions
-        self.ids.left_button.bind(on_press=self.go_left)
-        self.ids.right_button.bind(on_press=self.go_right)
-        self.ids.quit_button.bind(on_press=self.quit_main)
-        # Instantiate DropDown button
-        global dropdown
-        dropdown = CustomDropDown()
-        self.ids.categ_button.bind(on_release=dropdown.open)
-        # dropdown.bind(on_select=lambda instance, x: setattr(self.ids.categ_button, 'text', x))
-        dropdown.bind(on_select=lambda instance,x: setattr(self.ids.categ_button, 'text', x))
-        dropdown.bind(on_dismiss=lambda x: self.setUp_viewer_ads())
-        # Disable category, go left, go right, and quit buttons at start
-        self.ids.left_button.disabled = True
-        self.ids.right_button.disabled = True
-        self.ids.categ_button.disabled = False
+
+        self.ids.help_button.bind(on_release=lambda *args: self.help_popup())
+        self.ids.like_button.bind(on_press=lambda *ads: self.pref_ads('Like'))
+        self.ids.dislike_button.bind(on_press=lambda *ads: self.pref_ads('Dislike'))
+        self.ids.neutral_button.bind(on_press=lambda *ads: self.pref_ads('Neutral'))
+        self.ids.quit_button.bind(on_press=lambda *args: self.begin_log_out())
+
+        self.ids.like_button.disabled = True
+        self.ids.dislike_button.disabled = True
+        self.ids.neutral_button.disabled = True
         self.ids.quit_button.disabled = True
 
-        # Clock.schedule_once(lambda dt: self.timer_label_count(0), 0)
-
-    ####################################################################
-    #
-    #
-    ####################################################################
     @mainthread
-    def setUp_viewer_ads(self):
-        print(self.ids.categ_button.text)
-        self.ids.center_image.source = 'newImage.png'
+    def enable_pref_buttons(self):
+        self.ids.like_button.disabled = False
+        self.ids.like_button.color = 0, 1, 0, 1
+        self.ids.dislike_button.disabled = False
+        self.ids.dislike_button.color = 1, 0, 0, 1
+        self.ids.neutral_button.disabled = False
+        self.ids.neutral_button.color = 0, 0.75, 1, 1
 
-    ####################################################################
-    #
-    #
-    ####################################################################
     @mainthread
-    def timer_label_count(self,num):
-        if num == 10:
-            self.ids.timer_label.color = 1, 0, 0, 1
-            self.ids.timer_label.text = str(num)
-            return
-        num += 1
-        self.ids.timer_label.text = str(num)
-        Clock.schedule_once(lambda dt: self.timer_label_count(num), 1)
+    def disable_pref_buttons(self):
+        self.ids.like_button.disabled = True
+        self.ids.like_button.color = 0, 1, 0, 0.5
+        self.ids.dislike_button.disabled = True
+        self.ids.dislike_button.color = 1, 0, 0, 0.5
+        self.ids.neutral_button.disabled = True
+        self.ids.neutral_button.color = 0, 0.75, 1, 0.5
 
-    #############################################################
-    # Function for implementing an action when the user presses
-    # the left arrow.
-    # - Make left ad appear (could be end image on opposite end).
-    #############################################################
     @mainthread
-    def go_left(self):
-        pass
+    def timer_label_count(self, num, *args):
+        if self.timer_stop == True:
+            self.ids.timer_label.text = str(num)+'s'
+            if num == 0:
+                self.ids.timer_label.color = 1, 0, 0, 1
+                self.enable_pref_buttons()
+            else:
+                self.ids.timer_label.color = 0, 1, 0, 1
 
-    #############################################################
-    # Function for implementing an action when the user presses
-    # the right arrow.
-    # - Make right ad appear (could be first image on opposite end/direction).
-    #############################################################
     @mainthread
-    def go_right(self):
-        pass
+    def resize_screen(self):
+        Window.fullscreen = 'auto'
 
-    #############################################################
-    # Function for when the user presses the QUIT button.
-    #############################################################
     @mainthread
-    def quit_main(self):
-        # Disable category, go left, go right, and quit buttons at start
-        self.ids.left_button.disabled = True
-        self.ids.right_button.disabled = True
-        self.ids.categ_button.disabled = True
+    def pref_ads(self, opin_ad):
+        self.payment += 1
+        r = requests.post(SenseAdEndpoint.URL + SenseAdEndpoint.RATE_AD_PATH, data={'user_id' : self.response_json["person"]["personId"], 'ad_id' : self.response_json["ads"][self.ad_counter]['ad_id'], 'rating': opin_ad})
+        print(r.content)
+
+        self.disable_pref_buttons()
+        self.ad_counter += 1
+
+        if (len(self.response_json["ads"]) > self.ad_counter):
+            self.ids.center_image.source = self.response_json["ads"][self.ad_counter]["ad"]["url"]
+            self.ids.center_image.reload()
+            self.start_ad_timer()
+        else:
+            self.begin_log_out()
+
+    def start_ad_timer(self):
+        self.ids.timer_label.color = 0, 1, 0, 1
+        time.sleep(0.5)
+
+        for i in range(5, -1, -1):
+            Clock.schedule_once(partial(self.timer_label_count, i), 5-i)
+
+    @mainthread
+    def popup_iota(self):
+        popup_text = 'You received a payment of ' + str(self.payment) + ' IOTA.'
+        content = Label( text=popup_text,
+                        background_normal='',
+                        background_color=[0, 0, 0, 1],
+                        text_size=self.size,
+                        halign='center',
+                        valign='middle',
+                        padding_x=50)
+        popup = Popup(title='IOTA Payment', content=content, auto_dismiss=True,
+                      size_hint=[.4, .2])
+        content.bind(on_release=popup.dismiss)
+        popup.bind(on_dismiss=self.quit_main)
+        popup.open()
+
+    def begin_log_out(self):
+        self.popup_iota()
+
+    @mainthread
+    def quit_main(self, args):
+        r = requests.post(SenseAdEndpoint.URL + SenseAdEndpoint.LOG_OUT_PATH, data={'user_id' : self.response_json["person"]["personId"], 'payment' : self.payment})
+        self.ids.center_image.source = 'background.jpg'
+        self.ids.user_image.source = 'background.jpg'
+        self.ids.user_image.reload()
+
+        self.ids.like_button.disabled = True
+        self.ids.dislike_button.disabled = True
+        self.ids.neutral_button.disabled = True
         self.ids.quit_button.disabled = True
-        # Set attributes of GUI widgets to use when user is found
-        self.ids.categ_button.text = ""
-        self.ids.categ_button.color = 0, 0, 0, 1
+
         self.ids.quit_button.text = ""
         self.ids.quit_button.color = 0, 0, 0, 1
-        self.ids.left_button.text = ""
-        self.ids.right_button.text = ""
+        self.ids.like_button.text = ""
+        self.ids.like_button.color = 0, 0, 0, 1
+        self.ids.dislike_button.text = ""
+        self.ids.dislike_button.color = 0, 0, 0, 1
+        self.ids.neutral_button.text = ""
+        self.ids.neutral_button.color = 0, 0, 0, 1
+        self.ids.timer_label.text = "    "
+        self.ids.user_label.color = 1, 0, 0, 1
+        self.ids.user_label.text = "Finding user..."
+
+        self.timer_stop = False
         self.ids.timer_label.text = ""
+        self.quit = True
+        self.spawn_camera_thread()
 
-#############################################################
-# This class is used to connect to the kivy class of the same
-# name. The kivy class is used to create a drop menu for
-# letting the user select from a variety of advertisements.
-#############################################################
-class CustomDropDown(DropDown):
-    pass
-
-#############################################################
-# This class is for instantiating an initial screen to use.
-# Intended to be used when the GUI was going to be multiple
-# screens versus the current 1 screen.
-#############################################################
 class Manager(ScreenManager):
     stop = threading.Event()
     screen_one = ObjectProperty(None)
 
-#############################################################
-# Separate class for running the kivy GUI.
-#############################################################
 class ScreensApp(App):
-    # NOT REALLY IMPLEMENTED... YET.
     def on_stop(self):
-        # The Kivy event loop is about to stop, set a stop signal;
-        #  otherwise the app window will close, but the Python process will
-        # keep running until all secondary threads exit.
-        self.root.stop.set()
+        #self.root.stop.set()
+        print("exited")
+
     # Start the program
     def build(self):
         m = Manager(transition=NoTransition())
         return m
 
-# Runs program -> NOT PART OF ANY CLASS!
 if __name__ == "__main__":
     ScreensApp().run()
