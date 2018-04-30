@@ -124,5 +124,3 @@ def train_model():
     filename = 'model.sav'
     pickle.dump(clf, open('model.sav', 'wb'))
 
-train_model()
-predict_categories("Male", 34)
